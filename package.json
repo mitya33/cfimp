@@ -1,0 +1,19 @@
+{
+  "name": "cfimp",
+  "version": "1.0.0",
+  "description": "A simple but powerful CSV data importer for the Contentful headless CMS",
+  "main": "import.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "bin": "./cfimp.js",
+  "keywords": [
+    "contentful",
+    "import",
+    "csv",
+    "tsv",
+    "cli"
+  ],
+  "author": "Andrew Croxall (@mitya33)",
+  "license": "MIT"
+}
