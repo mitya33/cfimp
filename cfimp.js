@@ -60,12 +60,12 @@
 	//notices
 	if (!args.input) console.info(cnslCols.blue, '@import not specified; assuming "import.csv"');
 	if (!args.delim) console.info(cnslCols.blue, '@delim not specified; assuming tab');
-	if (!args.fields) console.info(cnslCols.blue, '@fields not specified; using first row of data as field IDs');
+	if (!args.fields) console.info(cnslCols.blue, '@fields not specified; inferring field IDs from row in data file');
 	if (!args.env) console.info(cnslCols.blue, '@env not specified; assuming "master"');
 	if (!args.enc) console.info(cnslCols.blue, '@enc not passed; assuming utf8');
 
 	//import command structure
-	const importCmd = `contentful space import --environment-id ${env} --space-id ${args.space} --content-file ${jsonFileName}}`;
+	const importCmd = `contentful space import --environment-id ${env} --space-id ${args.space} --content-file ${jsonFileName}`;
 
 	//content file structure
 	const data = {
@@ -118,7 +118,7 @@
 		if (fields.length > 1 && cells.length < 2) return console.error(cnslCols.red, `Quit at row ${i} - delimiter (${delim}) not found. Did you mean to set a different delimiter (@delim), or use @singlerow?`);
 		let newObj = {...JSON.parse(JSON.stringify(entryTmplt))};
 		fields.forEach((field, i) => {
-			if (field != '_tags') {
+			if (!['_tags', '_id'].includes(field)) {
 				let fieldIdAndLocaleSpl = field.split(/\[(?=[\w-]+\]$)/);
 				field = fieldIdAndLocaleSpl[0];
 				let locale = (fieldIdAndLocaleSpl[1] || args.locale).replace(/\]$/, ''),
@@ -126,8 +126,10 @@
 				if (dfltVal) dfltVal = !dfltVal.length ? null : dfltVal[0].split('=')[1];
 				let val = cells[i] || dfltVal;
 				newObj.fields[field] = {...(newObj.fields[field] || {}), [locale]: handleFieldVal(val)};
-			} else
+			} else if (field == '_tags')
 				cells[i].split('/').forEach(tag => addTag(tag, newObj));
+			else
+				newObj.sys.id = cells[i];
 		});
 		mergeVals && mergeVals.forEach(pair => {
 			let spl = pair.split('=');
@@ -139,14 +141,17 @@
 
 	//show or write JSON file
 	if (args.preview) return console.log(JSON.stringify(data, null, '	'));
-	await new Promise((res, rej) => {
+	let wroteJSONFile = await new Promise((res, rej) => {
 		fs.writeFile(jsonFileName, JSON.stringify(data), encoding, err => !err ? res() : rej(err));
 	});
+	//todo - ensure write was successful else quit with an error
 
 	//run import - delete JSON file after
 	try {
 		childProcess.execSync(importCmd, {stdio: 'inherit'});
-	} catch(e) {};
+	} catch(e) {
+		return console.error(cnslCols.red, e);
+	};
 	fs.unlink(jsonFileName, err => {});
 
 	//util - validate incoming com-sep field=val args
