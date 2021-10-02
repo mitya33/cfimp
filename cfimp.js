@@ -55,7 +55,11 @@
 	const csvFileName = args.input || 'import.csv';
 	const env = args.env || 'master';
 	const encoding = args.enc || 'utf8';
-	if (!['utf8', 'ascii', 'base64'].includes(encoding)) return console.error(cnslCols.red, '@encoding must be either "utf8" (default), "ascii" or "base64"');
+	try {
+		await new Promise((res, rej) => {
+			fs.access(csvFileName, err => !err ? res() : rej());
+		});
+	} catch(e) { return console.error(cnslCols.red, `File "${csvFileName}" does not exist or it could not be read`); }
 
 	//notices
 	if (!args.input) console.info(cnslCols.blue, '@import not specified; assuming "import.csv"');
@@ -102,9 +106,11 @@
 	}
 
 	//get data to import
-	const cntnt = await new Promise((res, rej) => {
-		fs.readFile(csvFileName, encoding, (err, cntnt) => !err ? res(cntnt) : rej(err));
-	});
+	try {
+		const cntnt = await new Promise((res, rej) => {
+			fs.readFile(csvFileName, encoding, (err, cntnt) => !err ? res(cntnt) : rej(err));
+		});
+	} catch(e) { return console.error(cnslCols.red, e); }
 
 	//convert to JSON - shoehorn in merge values and default values (where explicit value omitted)
 	const rows = cntnt.split(/\r\n/);
@@ -141,17 +147,18 @@
 
 	//show or write JSON file
 	if (args.preview) return console.log(JSON.stringify(data, null, '	'));
-	let wroteJSONFile = await new Promise((res, rej) => {
-		fs.writeFile(jsonFileName, JSON.stringify(data), encoding, err => !err ? res() : rej(err));
-	});
-	//todo - ensure write was successful else quit with an error
+	try {
+		await new Promise((res, rej) => {
+			fs.writeFile(jsonFileName, JSON.stringify(data), encoding, err => !err ? res() : rej(err));
+		});
+	} catch(e) { return console.error(cnslCols.red, e); }
 
 	//run import - delete JSON file after
 	try {
 		childProcess.execSync(importCmd, {stdio: 'inherit'});
 	} catch(e) {
 		return console.error(cnslCols.red, e);
-	};
+	}
 	fs.unlink(jsonFileName, err => {});
 
 	//util - validate incoming com-sep field=val args
