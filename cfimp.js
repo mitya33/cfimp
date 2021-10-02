@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 /* -----------
 | CONTENTFUL EI - Contentful easy importer. Easy-to-use entry importer for the Contentful headless CMS.
 |	@docs/links:
