@@ -33,7 +33,8 @@
 		'skip',
 		'limit',
 		'nocast',
-		'tagall'
+		'tagall',
+		'input'
 	];
 	const args = {};
 	process.argv.slice(2).forEach(arg => {
