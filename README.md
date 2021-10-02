@@ -10,7 +10,7 @@ cfimp is best used via `npx` and doesn't need to be installed onto your machine.
 
 ## Why
 
-Contentful doesn't make it super easy to import data. There's no GUI; instead the the `contentful-cli` tool has an import command, but it's [sparsely documented]((https://www.contentful.com/developers/docs/tutorials/cli/import-and-export)), and you first have to munge your data into JSON. There's no easy way to import spreadsheet-derived data. Further, Contentful doesn't make explicit what the structure of the JSON should be. 
+Contentful doesn't make it super easy to import data. There's no GUI; instead the the `contentful-cli` tool has an import command, but it's [sparsely documented](https://www.contentful.com/developers/docs/tutorials/cli/import-and-export), and you first have to munge your data into JSON. There's no easy way to import spreadsheet-derived data. Further, Contentful doesn't make explicit what the structure of the JSON should be. 
 
 ## Examples
 
