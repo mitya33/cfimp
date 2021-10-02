@@ -34,7 +34,9 @@
 		'limit',
 		'nocast',
 		'tagall',
-		'input'
+		'input',
+		'comsepdelim',
+		'mtoken'
 	];
 	const args = {};
 	process.argv.slice(2).forEach(arg => {
@@ -48,10 +50,12 @@
 	if (args.limit && !validateIntArgs('limit')) return;
 	if (args.mergevals && !validateFieldValListArgs('mergevals')) return;
 	if (args.dfltvals && !validateFieldValListArgs('dfltvals')) return;
-	if (args.fields && !/\w+(,\w+)*/.test(args.fields)) return console.error(cnslCols.red, '@fields, if passed, must be a com-sep list of field IDs');
-	const mergeVals = !args.mergevals ? null : args.mergevals.split(',');
-	const dfltvals = !args.dfltvals ? null : args.dfltvals.split(',');
-	const fieldOverrides = !args.fields ? null : args.fields.split(',');
+	if (args.fields && !newRegExp(`\w+(${comSepDelim}\w+)*`).test(args.fields))
+		return console.error(cnslCols.red, `@fields, if passed, must be in the format fieldId1${comSepDelim}fieldId2 etc`);
+	const comSepDelim = args.comsepdelim || ',';
+	const mergeVals = !args.mergevals ? null : args.mergevals.split(comSepDelim);
+	const dfltvals = !args.dfltvals ? null : args.dfltvals.split(comSepDelim);
+	const fieldOverrides = !args.fields ? null : args.fields.split(comSepDelim);
 	const delim = args.delim == 'tab' || !args.delim ? '\t' : (args.delim == 'com' ? ',' : (args.delim == 'pipe' ? '|' : args.delim));
 	const csvFileName = args.input || 'import.csv';
 	const env = args.env || 'master';
@@ -70,7 +74,7 @@
 	if (!args.enc) console.info(cnslCols.blue, '@enc not passed; assuming utf8');
 
 	//import command structure
-	const importCmd = `contentful space import --environment-id ${env} --space-id ${args.space} --content-file ${jsonFileName}`;
+	const importCmd = `contentful space import --environment-id ${env} --space-id ${args.space} --content-file ${jsonFileName} ${args.mtoken || ''}`;
 
 	//content file structure
 	const data = {
@@ -107,8 +111,9 @@
 	}
 
 	//get data to import
+	let cntnt;
 	try {
-		const cntnt = await new Promise((res, rej) => {
+		cntnt = await new Promise((res, rej) => {
 			fs.readFile(csvFileName, encoding, (err, cntnt) => !err ? res(cntnt) : rej(err));
 		});
 	} catch(e) { return console.error(cnslCols.red, e); }
@@ -120,9 +125,9 @@
 		i++;
 		if (args.offset && i < parseInt(args.offset)) return;
 		if (args.limit && i > parseInt(args.limit) + parseInt(args.offset || 0)) return;
-		if (args.skip && row.indexOf(args.skip)) return;
+		if (args.skip && args.skip.split(comSepDelim).find(skipRule => row.indexOf(skipRule))) return;
 		let cells = fields.length > 1 ? row.split(delim) : row;
-		if (fields.length > 1 && cells.length < 2) return console.error(cnslCols.red, `Quit at row ${i} - delimiter (${delim}) not found. Did you mean to set a different delimiter (@delim), or use @singlerow?`);
+		if (fields.length > 1 && cells.length < 2) return console.error(cnslCols.red, `Quit at row ${i} - delimiter (${delim}) not found. Did you mean to set a different delimiter (@delim)?`);
 		let newObj = {...JSON.parse(JSON.stringify(entryTmplt))};
 		fields.forEach((field, i) => {
 			if (!['_tags', '_id'].includes(field)) {
@@ -134,13 +139,13 @@
 				let val = cells[i] || dfltVal;
 				newObj.fields[field] = {...(newObj.fields[field] || {}), [locale]: handleFieldVal(val)};
 			} else if (field == '_tags')
-				cells[i].split('/').forEach(tag => addTag(tag, newObj));
+				cells[i].split(comSepDelim).forEach(tag => addTag(tag, newObj));
 			else
 				newObj.sys.id = cells[i];
 		});
 		mergeVals && mergeVals.forEach(pair => {
 			let spl = pair.split('=');
-			newObj.fields[spl[0]] = {[locale]: handleFieldVal(spl[1])};
+			newObj.fields[spl[0]] = {[args.locale]: handleFieldVal(spl[1])};
 		});
 		args.tagall && args.tagall.split('/').forEach(tag => addTag(tag, newObj));
 		data.entries.push(newObj);
@@ -164,7 +169,8 @@
 
 	//util - validate incoming com-sep field=val args
 	function validateFieldValListArgs(arg) {
-		if (!/^(\w+=\w)(,\w+=\w)*/.test(args[arg])) return console.error(cnslCols.red, `${arg} must be in format field=val,field2=val2 etc`);
+		if (!new RegExp(`^(\w+=\w)(${comSepDelim}\w+=\w)*`).test(args[arg]))
+			return console.error(cnslCols.red, `${arg} must be in format field=val${comSepDelim}field2=val2 etc`);
 		return 1;
 	}
 
