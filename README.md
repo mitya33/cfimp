@@ -59,18 +59,18 @@ Valid arguments are as follows.
 - `input` - path to the input file (optional; default: "input.csv")
 - `model` - the ID of the Contentful model (content type) to write to (required)
 - `space` - the ID of the Contentful space to write to (required)
-- `mergevals` - a com-sep list of `field=value` pairs - to merge into all rows (optional) Read more: [Merge and default values](#merged-and-default-values)
-- `dfltvals` - a com-list of `field=value` defaults to be used where any rows have empty cells. Read more: [Merge and default values](#merged-and-default-vaues)
+- `mergevals` - a com-sep list of `field=value` pairs - to merge into all rows (optional) Read more: [Merge and default values](#user-content-merged-and-default-values)
+- `dfltvals` - a com-list of `field=value` defaults to be used where any rows have empty cells. Read more: [Merge and default values](#user-content-merged-and-default-vaues)
 - `delim` - the delimiter separating columns (for multi-column files) - one of "tab", "com" (comma) or any other string (optional; default: "tab")
 - `fields` - the fields to import into. If omitted, cfimp will assume the first row of the input data denotes the fields (optional)
-- `locale` - the locale, as defined in Contentful, e.g. "[en-GB]" (required). See [Writing to multiple locales](#multiple-locales)
+- `locale` - the locale, as defined in Contentful, e.g. "[en-GB]" (required). See [Writing to multiple locales](#user-content-multiple-locales)
 - `enc` - the file encoding for your data (you shouldn't need to change this) - one of "utf8", "ascii" or "base64" (optional; default: "utf8")
 - `preview*`	- if passed, outputs the generated JSON and no import is run. Combine with `limit` to avoid filling your terminal with pages of JSON (optional)
 - `offset` - a 1-index offset (row) to begin reading data from in your input file (optional)
 - `limit` - a limit as to the number of rows to process (optional)
 - `skip` - a string which, if found in a row (any column) will cause that row to be skipped (optional)
 - `nocast` - ordinarily, numbers, true and false will be cast to their integer/boolean equivalents when data is passed to Contentful. Pass true to prevent this (i.e. if you literally want to pass "true" not `true`) (optional)
-- `tagall` - a com-sep list of (existing) tags to tag all entries with. You can also specify row-specific tags. Read more: [Tagging items](#tagging-items)
+- `tagall` - a com-sep list of (existing) tags to tag all entries with. You can also specify row-specific tags. Read more: [Tagging items](#user-content-tagging-items)
 - `comsepdelim` - the delimiter to look for in **all** arguments that accept a com-sep list (optional; default: ",")
 - `mtoken` - a management token to authenticate with Contentful. You can omit this if you've already authenticated via `contentful login` (optional)
 
@@ -174,7 +174,7 @@ Delimiters are factors in two areas of cfimp:
 - the delimiter used to separate the values in your input file
 - the delimiter used to separate any (normally) comma-separated pairings in arguments or `_tag` field values
 
-Both of these can be overriden - the former via the `delim` arg and the latter via the `comsepdelim` arg. Note that `comsepdelim` will apply to **all** occasions where cfimp is attempting to decipher something that it normally expects to be in com-sep format - so for example `_tags` fields, the `mergevals` [argument](#usage), and so on.
+Both of these can be overriden - the former via the `delim` arg and the latter via the `comsepdelim` arg. Note that `comsepdelim` will apply to **all** occasions where cfimp is attempting to decipher something that it normally expects to be in com-sep format - so for example `_tags` fields, the `mergevals` [argument](#user-content-usage), and so on.
 
 # Like this?
 
