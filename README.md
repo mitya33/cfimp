@@ -44,7 +44,7 @@ contentful login
 
 Authenticating this way will save the credentials in your environment so you don't have to authenticate manually each time you use cfimp. If you'd rather do that instead, though, see the `mtoken` argument.
 
-## Usage {#usage}
+## Usage
 
 cfimp should be used via `npx`, i.e.
 
@@ -59,18 +59,18 @@ Valid arguments are as follows.
 - `input` - path to the input file (optional; default: "input.csv")
 - `model` - the ID of the Contentful model (content type) to write to (required)
 - `space` - the ID of the Contentful space to write to (required)
-- `mergevals` - a com-sep list of `field=value` pairs - to merge into all rows (optional) Read more: [Merge/default values](#merge-default-vals)
-- `dfltvals` - a com-list of `field=value` defaults to be used where any rows have empty cells. Read more: [Merge/default values](#merge-default-vals)
+- `mergevals` - a com-sep list of `field=value` pairs - to merge into all rows (optional) Read more: **Merge/default values**
+- `dfltvals` - a com-list of `field=value` defaults to be used where any rows have empty cells. Read more: **Merge/default values**
 - `delim` - the delimiter separating columns (for multi-column files) - one of "tab", "com" (comma) or any other string (optional; default: "tab")
 - `fields` - the fields to import into. If omitted, cfimp will assume the first row of the input data denotes the fields (optional)
-- `locale` - the locale, as defined in Contentful, e.g. "[en-GB]" (required). See also: [Writing to multiple locales](#multiple-locales)
+- `locale` - the locale, as defined in Contentful, e.g. "[en-GB]" (required). See: **Writing to multiple locales**
 - `enc` - the file encoding for your data (you shouldn't need to change this) - one of "utf8", "ascii" or "base64" (optional; default: "utf8")
 - `preview*`	- if passed, outputs the generated JSON and no import is run. Combine with `limit` to avoid filling your terminal with pages of JSON (optional)
 - `offset` - a 1-index offset (row) to begin reading data from in your input file (optional)
 - `limit` - a limit as to the number of rows to process (optional)
 - `skip` - a string which, if found in a row (any column) will cause that row to be skipped (optional)
 - `nocast` - ordinarily, numbers, true and false will be cast to their integer/boolean equivalents when data is passed to Contentful. Pass true to prevent this (i.e. if you literally want to pass "true" not `true`) (optional)
-- `tagall` - a com-sep list of (existing) tags to tag all entries with. You can also specify row-specific tags. Read more: [Tagging items](#tagging-items)
+- `tagall` - a com-sep list of (existing) tags to tag all entries with. You can also specify row-specific tags. Read more: **Tagging items**
 - `comsepdelim` - the delimiter to look for in **all** arguments that accept a com-sep list (optional; default: ",")
 - `mtoken` - a management token to authenticate with Contentful. You can omit this if you've already authenticated via `contentful login` (optional)
 
@@ -94,7 +94,7 @@ If for some reason all our authors have the same face and photo, we can even spe
 cfimp --space:12345 -model:authors -locale:en-GB -mergevals:authoBioPhoto=refa-12345
 ```
 
-## Merged anddefault values {#merge-default-vals}
+## Merged anddefault values
 
 It's possible to specify default fallback values for your data, which will take effect if the cell is empty for that field.
 
@@ -161,7 +161,7 @@ forename	surname	_tags
 Philippa	Gregory	foo,bar
 ```
 
-You can also tag *all* items at runtime via the `tagall` [argument](#usage).
+You can also tag *all* items at runtime via the `tagall` argument.
 
 cfimp --space:12345 -model:authors -tagall:foo,bar
 
