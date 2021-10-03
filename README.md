@@ -48,6 +48,8 @@ Authenticating this way will save the credentials in your environment so you don
 
 > Note: the default delimiter is **tab**. This can be changed via the `delim` arg.
 
+> It's strongly recommended to preview the generated data before running the write. See the `preview` arg.
+
 cfimp should be used via `npx`, i.e.
 
 ```
@@ -62,7 +64,7 @@ Valid arguments are as follows.
 - `space` - the ID of the Contentful space to write to (required)
 - `model` - the ID of the Contentful model (content type) to write to (required)
 - `locale` - the locale, as defined in Contentful, e.g. "[en-GB]" (required). See [Writing to multiple locales](#user-content-multiple-locales)
-- `preview*` - if passed, shows a preview of the data that will be written to Contentful; no write is performed. HIGHLY recommended before running the actual write. See [Troubleshooting](#user-content-troubleshooting) (optional)
+- `preview*` - if passed, shows a preview of the data that will be written to Contentful; no write is performed. See [Troubleshooting](#user-content-troubleshooting) (optional)
 - `env` - the ID of the Contentful environment to use (optional; default: "master")
 - `mergevals` - a com-sep list of `field=value` pairs - to merge into all rows (optional) See [Merge and default values](#user-content-merged-and-default-values)
 - `dfltvals` - a com-sep list of `field=value` defaults to be used anywhere a row has empty cells. See [Merge and default values](#user-content-merged-and-default-vaues)
