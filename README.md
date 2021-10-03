@@ -57,13 +57,14 @@ Arguments are specified in the format `-arg:val` or, where the argument doesn't 
 Valid arguments are as follows.
 
 - `input` - path to the input file (optional; default: "input.csv")
-- `model` - the ID of the Contentful model (content type) to write to (required)
 - `space` - the ID of the Contentful space to write to (required)
+- `model` - the ID of the Contentful model (content type) to write to (required)
+- `locale` - the locale, as defined in Contentful, e.g. "[en-GB]" (required). See [Writing to multiple locales](#user-content-multiple-locales)
+- `env` - the ID of the Contentful environment to use (optional; default: "master")
 - `mergevals` - a com-sep list of `field=value` pairs - to merge into all rows (optional) Read more: [Merge and default values](#user-content-merged-and-default-values)
 - `dfltvals` - a com-list of `field=value` defaults to be used where any rows have empty cells. Read more: [Merge and default values](#user-content-merged-and-default-vaues)
 - `delim` - the delimiter separating columns (for multi-column files) - one of "tab", "com" (comma) or any other string (optional; default: "tab")
 - `fields` - the fields to import into. If omitted, cfimp will assume the first row of the input data denotes the fields (optional)
-- `locale` - the locale, as defined in Contentful, e.g. "[en-GB]" (required). See [Writing to multiple locales](#user-content-multiple-locales)
 - `enc` - the file encoding for your data (you shouldn't need to change this) - one of "utf8", "ascii" or "base64" (optional; default: "utf8")
 - `preview*`	- if passed, outputs the generated JSON and no import is run. Combine with `limit` to avoid filling your terminal with pages of JSON (optional)
 - `offset` - a 1-index offset (row) to begin reading data from in your input file (optional)

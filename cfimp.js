@@ -29,6 +29,7 @@
 		'fields',
 		'locale',
 		'enc',
+		'env',
 		'space',
 		'preview',
 		'offset',
@@ -47,13 +48,13 @@
 		args[spl[0]] = spl[1] || true;
 	});
 	const errArg = ['model', 'space', 'locale'].find(arg => !args[arg]);
-	if (errArg) return console.error(cnslCols.red, `@${errArg} must be specified`);
+	if (errArg) return console.error(cnslCols.red, `$${errArg} must be specified`);
 	if (args.offset && !validateIntArgs('offset')) return;
 	if (args.limit && !validateIntArgs('limit')) return;
 	if (args.mergevals && !validateFieldValListArgs('mergevals')) return;
 	if (args.dfltvals && !validateFieldValListArgs('dfltvals')) return;
 	if (args.fields && !newRegExp(`\w+(${comSepDelim}\w+)*`).test(args.fields))
-		return console.error(cnslCols.red, `@fields, if passed, must be in the format fieldId1${comSepDelim}fieldId2 etc`);
+		return console.error(cnslCols.red, `$fields, if passed, must be in the format fieldId1${comSepDelim}fieldId2 etc`);
 	const comSepDelim = args.comsepdelim || ',';
 	const mergeVals = !args.mergevals ? null : args.mergevals.split(comSepDelim);
 	const dfltvals = !args.dfltvals ? null : args.dfltvals.split(comSepDelim);
@@ -69,11 +70,11 @@
 	} catch(e) { return console.error(cnslCols.red, `File "${csvFileName}" does not exist or it could not be read`); }
 
 	//notices
-	if (!args.input) console.info(cnslCols.blue, '@import not specified; assuming "import.csv"');
-	if (!args.delim) console.info(cnslCols.blue, '@delim not specified; assuming tab');
-	if (!args.fields) console.info(cnslCols.blue, '@fields not specified; inferring field IDs from row in data file');
-	if (!args.env) console.info(cnslCols.blue, '@env not specified; assuming "master"');
-	if (!args.enc) console.info(cnslCols.blue, '@enc not passed; assuming utf8');
+	if (!args.input) console.info(cnslCols.blue, '$import not specified; assuming "import.csv"');
+	if (!args.delim) console.info(cnslCols.blue, '$delim not specified; assuming tab');
+	if (!args.fields) console.info(cnslCols.blue, '$fields not specified; inferring field IDs from row in data file');
+	if (!args.env) console.info(cnslCols.blue, '$env not specified; assuming "master"');
+	if (!args.enc) console.info(cnslCols.blue, '$enc not passed; assuming utf8');
 
 	//import command structure
 	const importCmd = `contentful space import --environment-id ${env} --space-id ${args.space} --content-file ${jsonFileName} ${args.mtoken || ''}`;
@@ -120,18 +121,28 @@
 		});
 	} catch(e) { return console.error(cnslCols.red, e); }
 
-	//convert to JSON - shoehorn in merge values and default values (where explicit value omitted)
+	//establish row(s) and field(s) and iterate...
 	const rows = cntnt.split(/\r\n/);
 	const fields = fieldOverrides || rows.shift().split(delim);
 	rows.forEach((row, i) => {
 		i++;
+
+		//...skip if is contrary to limit/offset or skip rules
 		if (args.offset && i < parseInt(args.offset)) return;
 		if (args.limit && i > parseInt(args.limit) + parseInt(args.offset || 0)) return;
 		if (args.skip && args.skip.split(comSepDelim).find(skipRule => row.indexOf(skipRule))) return;
+
+		//...establish cell(s)
 		let cells = fields.length > 1 ? row.split(delim) : row;
-		if (fields.length > 1 && cells.length < 2) return console.error(cnslCols.red, `Quit at row ${i} - delimiter (${delim}) not found. Did you mean to set a different delimiter (@delim)?`);
+		if (fields.length > 1 && cells.length < 2) return console.error(cnslCols.red, `Quit at row ${i} - delimiter (${delim}) not found. Did you mean to set a different delimiter ($delim)?`);
+
+		//...clone entry template
 		let newObj = {...JSON.parse(JSON.stringify(entryTmplt))};
+
+		//...iterate over fields...
 		fields.forEach((field, i) => {
+
+			//...normal data column
 			if (!['_tags', '_id'].includes(field)) {
 				let fieldIdAndLocaleSpl = field.split(/\[(?=[\w-]+\]$)/);
 				field = fieldIdAndLocaleSpl[0];
@@ -140,17 +151,24 @@
 				if (dfltVal) dfltVal = !dfltVal.length ? null : dfltVal[0].split('=')[1];
 				let val = cells[i] || dfltVal;
 				newObj.fields[field] = {...(newObj.fields[field] || {}), [locale]: handleFieldVal(val)};
+
+			//special _id (existing item) or _tags columns
 			} else if (field == '_tags')
 				cells[i].split(comSepDelim).forEach(tag => addTag(tag, newObj));
 			else
 				newObj.sys.id = cells[i];
 		});
+
+		//...any merge data or tag-alls?
 		mergeVals && mergeVals.forEach(pair => {
 			let spl = pair.split('=');
 			newObj.fields[spl[0]] = {[args.locale]: handleFieldVal(spl[1])};
 		});
 		args.tagall && args.tagall.split('/').forEach(tag => addTag(tag, newObj));
+
+		//...log prepared entry
 		data.entries.push(newObj);
+		
 	});
 
 	//show or write JSON file
@@ -178,7 +196,7 @@
 
 	//util - validate int args
 	function validateIntArgs(arg) {
-		if (!parseInt(args[arg]) || parseInt(args[arg]) < 0) console.error(cnslCols.red, `@${arg}, if passed, must be an integer (0+)`);
+		if (!parseInt(args[arg]) || parseInt(args[arg]) < 0) console.error(cnslCols.red, `$${arg}, if passed, must be an integer (0+)`);
 		return 1;
 	}
 
@@ -187,7 +205,7 @@
 		return handleLatLng(handleValType(handleRef(val)));
 	}
 
-	//util - handle val type - cast 'true' and 'false' to actual booleans, and numbers to actual numbers, unless @nocast passed
+	//util - handle val type - cast 'true' and 'false' to actual booleans, and numbers to actual numbers, unless $nocast passed
 	function handleValType(val) {
 		if (args.nocast) return val;
 		if (val == 'true') val = true;
