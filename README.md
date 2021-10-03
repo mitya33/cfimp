@@ -1,6 +1,6 @@
 # cfimp
 
-cfimp is a simple but powerful CLI tool for importing/updating CSV data in the Contentful headless CMS.
+cfimp is a simple but powerful CLI tool for importing/updating CSV data in the Contentful headless CMS. The default delimiter is **tab**.
 
 In the process of importing/updating, entries can optionally be linked to (existing) assets, tags or references (foreign items).
 
@@ -46,6 +46,8 @@ Authenticating this way will save the credentials in your environment so you don
 
 ## Usage
 
+> Note: the default delimiter is **tab**. This can be changed via the `delim` arg.
+
 cfimp should be used via `npx`, i.e.
 
 ```
@@ -60,13 +62,13 @@ Valid arguments are as follows.
 - `space` - the ID of the Contentful space to write to (required)
 - `model` - the ID of the Contentful model (content type) to write to (required)
 - `locale` - the locale, as defined in Contentful, e.g. "[en-GB]" (required). See [Writing to multiple locales](#user-content-multiple-locales)
+- `preview*` - if passed, shows a preview of the data that will be written to Contentful; no write is performed. HIGHLY recommended before running the actual write. See [Troubleshooting](#user-content-troubleshooting) (optional)
 - `env` - the ID of the Contentful environment to use (optional; default: "master")
 - `mergevals` - a com-sep list of `field=value` pairs - to merge into all rows (optional) Read more: [Merge and default values](#user-content-merged-and-default-values)
 - `dfltvals` - a com-list of `field=value` defaults to be used where any rows have empty cells. Read more: [Merge and default values](#user-content-merged-and-default-vaues)
 - `delim` - the delimiter separating columns (for multi-column files) - one of "tab", "com" (comma) or any other string (optional; default: "tab")
 - `fields` - the fields to import into. If omitted, cfimp will assume the first row of the input data denotes the fields (optional)
 - `enc` - the file encoding for your data (you shouldn't need to change this) - one of "utf8", "ascii" or "base64" (optional; default: "utf8")
-- `preview*`	- if passed, outputs the generated JSON and no import is run. Combine with `limit` to avoid filling your terminal with pages of JSON (optional)
 - `offset` - a 1-index offset (row) to begin reading data from in your input file (optional)
 - `limit` - a limit as to the number of rows to process (optional)
 - `skip` - a string which, if found in a row (any column) will cause that row to be skipped (optional)
@@ -176,6 +178,20 @@ Delimiters are factors in two areas of cfimp:
 - the delimiter used to separate any (normally) comma-separated pairings in arguments or `_tag` field values
 
 Both of these can be overriden - the former via the `delim` arg and the latter via the `comsepdelim` arg. Note that `comsepdelim` will apply to **all** occasions where cfimp is attempting to decipher something that it normally expects to be in com-sep format - so for example `_tags` fields, the `mergevals` [argument](#user-content-usage), and so on.
+
+# Troubleshooting
+
+It's HIGHLY recommended to **preview the generated data** before running the actual import/data. This shows you what cfimp intends to send to Contentful for import/update.
+
+You can do this via the preview argument, i.e.
+
+```
+npx cfimp -preview -limit:1 <other args>
+```
+
+A limit is handy in order to avoid numerous terminal screens of data.
+
+If you find cfimp is deriving or malformed bad data, **check the `delim` and `comSepDelim`** args.
 
 # Like this?
 
