@@ -20,7 +20,7 @@
 		red: '\x1b[31m%s\x1b[0m'
 	};
 
-	//handle CLI args
+	//handle incoming args & set some config
 	const validArgs = [
 		'model',
 		'mergevals',
@@ -48,16 +48,16 @@
 		args[spl[0]] = spl[1] || true;
 	});
 	const errArg = ['model', 'space', 'locale'].find(arg => !args[arg]);
-	if (errArg) return console.error(cnslCols.red, `$${errArg} must be specified`);
+	const comSepDelim = args.comsepdelim || ',';
+	if (errArg) return console.error(cnslCols.red, `$${errArg} must be passed`);
 	if (args.offset && !validateIntArgs('offset')) return;
 	if (args.limit && !validateIntArgs('limit')) return;
 	if (args.mergevals && !validateFieldValListArgs('mergevals')) return;
 	if (args.dfltvals && !validateFieldValListArgs('dfltvals')) return;
-	if (args.fields && !newRegExp(`\w+(${comSepDelim}\w+)*`).test(args.fields))
+	if (args.fields && !newRegExp(`\\w+(${comSepDelim}\\w+)*`).test(args.fields))
 		return console.error(cnslCols.red, `$fields, if passed, must be in the format fieldId1${comSepDelim}fieldId2 etc`);
-	const comSepDelim = args.comsepdelim || ',';
 	const mergeVals = !args.mergevals ? null : args.mergevals.split(comSepDelim);
-	const dfltvals = !args.dfltvals ? null : args.dfltvals.split(comSepDelim);
+	const dfltVals = !args.dfltvals ? null : args.dfltvals.split(comSepDelim);
 	const fieldOverrides = !args.fields ? null : args.fields.split(comSepDelim);
 	const delim = args.delim == 'tab' || !args.delim ? '\t' : (args.delim == 'com' ? ',' : (args.delim == 'pipe' ? '|' : args.delim));
 	const csvFileName = args.input || 'import.csv';
@@ -70,10 +70,10 @@
 	} catch(e) { return console.error(cnslCols.red, `File "${csvFileName}" does not exist or it could not be read`); }
 
 	//notices
-	if (!args.input) console.info(cnslCols.blue, '$import not specified; assuming "import.csv"');
-	if (!args.delim) console.info(cnslCols.blue, '$delim not specified; assuming tab');
-	if (!args.fields) console.info(cnslCols.blue, '$fields not specified; inferring field IDs from row in data file');
-	if (!args.env) console.info(cnslCols.blue, '$env not specified; assuming "master"');
+	if (!args.input) console.info(cnslCols.blue, '$import not passed; assuming "import.csv"');
+	if (!args.delim) console.info(cnslCols.blue, '$delim not passed; assuming tab');
+	if (!args.fields) console.info(cnslCols.blue, '$fields not passed; inferring field IDs from row in data file');
+	if (!args.env) console.info(cnslCols.blue, '$env not passed; assuming "master"');
 	if (!args.enc) console.info(cnslCols.blue, '$enc not passed; assuming utf8');
 
 	//import command structure
@@ -144,10 +144,10 @@
 
 			//...normal data column
 			if (!['_tags', '_id'].includes(field)) {
-				let fieldIdAndLocaleSpl = field.split(/\[(?=[\w-]+\]$)/);
+				let fieldIdAndLocaleSpl = splitFieldIdAndLocale(field);
 				field = fieldIdAndLocaleSpl[0];
-				let locale = (fieldIdAndLocaleSpl[1] || args.locale).replace(/\]$/, ''),
-					dfltVal = !dfltvals ? null : dfltvals.filter(pair => pair.split('=')[0] == field);
+				let locale = (fieldIdAndLocaleSpl[1] || args.locale),
+					dfltVal = !dfltVals ? null : dfltVals.filter(pair => pair.split('=')[0] == field);
 				if (dfltVal) dfltVal = !dfltVal.length ? null : dfltVal[0].split('=')[1];
 				let val = cells[i] || dfltVal;
 				newObj.fields[field] = {...(newObj.fields[field] || {}), [locale]: handleFieldVal(val)};
@@ -161,18 +161,33 @@
 
 		//...any merge data or tag-alls?
 		mergeVals && mergeVals.forEach(pair => {
-			let spl = pair.split('=');
-			newObj.fields[spl[0]] = {[args.locale]: handleFieldVal(spl[1])};
+			let fieldValSpl = pair.split('='),
+				fieldIdLocaleSpl = splitFieldIdAndLocale(fieldValSpl[0]);
+			newObj.fields[fieldIdLocaleSpl[0]] = {...(newObj.fields[fieldIdLocaleSpl[0]] || {}), [!fieldIdLocaleSpl[1] ? args.locale : fieldIdLocaleSpl[1]]: handleFieldVal(fieldValSpl[1])};
 		});
-		args.tagall && args.tagall.split('/').forEach(tag => addTag(tag, newObj));
+		args.tagall && args.tagall.split(comSepDelim).forEach(tag => addTag(tag, newObj));
 
 		//...log prepared entry
 		data.entries.push(newObj);
 		
 	});
 
-	//show or write JSON file
-	if (args.preview) return console.log(JSON.stringify(data, null, '	'));
+	//preview only?
+	if (args.preview)
+		return console.log('Proposing to import/update the following data:\n', JSON.stringify(data.entries.map(entry => {
+			ret = {
+				_tags: entry.metadata.tags.map(obj => obj.sys.id)
+			};
+			if (entry.sys.id) ret._id = entry.sys.id;
+			Object.entries(entry.fields).forEach(([field, localeVals]) => {
+				Object.entries(localeVals).forEach(([locale, val]) => {
+					ret[`${field}[${locale}]`] = val;
+				});
+			})
+			return ret;
+		}), null, '   '));
+
+	//write JSON file
 	try {
 		await new Promise((res, rej) => {
 			fs.writeFile(jsonFileName, JSON.stringify(data), encoding, err => !err ? res() : rej(err));
@@ -189,7 +204,8 @@
 
 	//util - validate incoming com-sep field=val args
 	function validateFieldValListArgs(arg) {
-		if (!new RegExp(`^(\w+=\w)(${comSepDelim}\w+=\w)*`).test(args[arg]))
+		let ptnPart = '[\\w-\\[\\]]+';
+		if (!new RegExp(`^(${ptnPart}=[^${comSepDelim}]+)(${comSepDelim}${ptnPart}=[^${comSepDelim}]+)*`).test(args[arg]))
 			return console.error(cnslCols.red, `${arg} must be in format field=val${comSepDelim}field2=val2 etc`);
 		return 1;
 	}
@@ -234,9 +250,15 @@
 
 	//util - add tag
 	function addTag(tag, entryObj) {
+		if (entryObj.metadata.tags.find(obj => obj.sys.id == tag)) return;
 		let tagObj = JSON.parse(JSON.stringify(tagTmplt));
 		tagObj.sys.id = tag;
 		entryObj.metadata.tags.push(tagObj);			
+	}
+
+	//util - split field ID from locale in strings like foo[en-GB]
+	function splitFieldIdAndLocale(str) {
+		return str.split(/\[(?=[\w-]+\]$)/).map(part => part.replace(/\]$/, ''));
 	}
 
 })();
