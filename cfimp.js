@@ -75,6 +75,7 @@
 	if (!args.fields) console.info(cnslCols.blue, '$fields not passed; inferring field IDs from row in data file');
 	if (!args.env) console.info(cnslCols.blue, '$env not passed; assuming "master"');
 	if (!args.enc) console.info(cnslCols.blue, '$enc not passed; assuming utf8');
+	if (!args.fields) console.info(cnslCols.blue, '$fields not passed; reading field IDs from first line of data file');
 
 	//import command structure
 	const importCmd = `contentful space import --environment-id ${env} --space-id ${args.space} --content-file ${jsonFileName} ${args.mtoken || ''}`;
@@ -135,7 +136,8 @@
 
 		//...establish cell(s)
 		let cells = fields.length > 1 ? row.split(delim) : row;
-		if (fields.length > 1 && cells.length < 2) return console.error(cnslCols.red, `Quit at row ${i} - delimiter (${delim}) not found. Did you mean to set a different delimiter ($delim)?`);
+		if (fields.length > 1 && cells.length < 2)
+			return console.error(cnslCols.red, `Quit while validating row ${i} - delimiter (${delim}) not found. No write operation was performed. Did you mean to set a different delimiter ($delim)?`);
 
 		//...clone entry template
 		let newObj = {...JSON.parse(JSON.stringify(entryTmplt))};
