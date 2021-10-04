@@ -130,7 +130,7 @@ Philippa	Gregory	12345
 
 All data in Contentful is stored against locales, created by you in Contentful. This allows you to have multiple versions of each piece of data, for different locales. By default, cfimp will import/update data using the locale specified in the `locale` arg.
 
-However you can import/update multiple locales at once. To do so, specify the field as many times as you have locales, with each appended with a locale suffix.
+However you can import/update multiple locales at once. To do so, specify the field as many times as you have locales, with each additional one appended with a locale flag.
 
 So if your data was:
 
@@ -153,8 +153,6 @@ Berlin	Berlina
 npx cfimp --space:12345 -model:cities -locale:en-GB -fields:city,city[es-SP]
 ```
 
-Notice that, in either case, we didn't specify a locale for the first `city`; it will read from the default `locale` passed ("en-GB").
-
 ## Tagging items
 
 It's possible to tag items to (existing) tags when importing or updating items. There are two ways to do this.
@@ -168,9 +166,9 @@ Philippa	Gregory	foo,bar
 
 You can also tag *all* items at runtime via the `tagall` argument.
 
+```
 npx cfimp --space:12345 -model:authors -tagall:foo,bar
-
-(Note that in Contentful, tagging is done with the name of the tag itself - they don't have separate IDs.)
+```
 
 # Delimiter overrides
 
