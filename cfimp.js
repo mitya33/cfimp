@@ -54,7 +54,7 @@
 	if (args.limit && !validateIntArgs('limit')) return;
 	if (args.mergevals && !validateFieldValListArgs('mergevals')) return;
 	if (args.dfltvals && !validateFieldValListArgs('dfltvals')) return;
-	if (args.fields && !newRegExp(`\\w+(${comSepDelim}\\w+)*`).test(args.fields))
+	if (args.fields && !new RegExp(`\\w+(${comSepDelim}\\w+)*`).test(args.fields))
 		return console.error(cnslCols.red, `$fields, if passed, must be in the format fieldId1${comSepDelim}fieldId2 etc`);
 	const mergeVals = !args.mergevals ? null : args.mergevals.split(comSepDelim);
 	const dfltVals = !args.dfltvals ? null : args.dfltvals.split(comSepDelim);
@@ -181,7 +181,7 @@
 			if (entry.sys.id) ret._id = entry.sys.id;
 			Object.entries(entry.fields).forEach(([field, localeVals]) => {
 				Object.entries(localeVals).forEach(([locale, val]) => {
-					ret[`${field}[${locale}]`] = val;
+					ret[`${field}[${locale}]`] = typeof val != 'object' ? val : `${val.sys.linkType != 'Asset' ? 'R' : 'Asset r'}ef ${val.sys.id}`;
 				});
 			})
 			return ret;
