@@ -120,6 +120,7 @@
 			fs.readFile(csvFileName, encoding, (err, cntnt) => !err ? res(cntnt) : rej(err));
 		});
 	} catch(e) { return console.error(cnslCols.red, e); }
+	cntnt = cntnt.replace(/\s+$/, '');
 
 	//establish row(s) and field(s) and iterate...
 	const rows = cntnt.split(/\r\n/);
