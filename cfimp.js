@@ -32,6 +32,7 @@
 		'env',
 		'space',
 		'preview',
+		'skipfields',
 		'offset',
 		'skip',
 		'limit',
@@ -54,10 +55,11 @@
 	if (args.limit && !validateIntArgs('limit')) return;
 	if (args.mergevals && !validateFieldValListArgs('mergevals')) return;
 	if (args.dfltvals && !validateFieldValListArgs('dfltvals')) return;
-	if (args.fields && !new RegExp(`\\w+(${comSepDelim}\\w+)*`).test(args.fields))
-		return console.error(cnslCols.red, `$fields, if passed, must be in the format fieldId1${comSepDelim}fieldId2 etc`);
+	if (args.skipfields && !validateFieldValListArgs('skipfields', 1)) return;
+	if (args.fields && !validateFieldValListArgs('fields', 1)) return;
 	const mergeVals = !args.mergevals ? null : args.mergevals.split(comSepDelim);
 	const dfltVals = !args.dfltvals ? null : args.dfltvals.split(comSepDelim);
+	const skipFields = !args.skipfields ? null : args.skipfields.split(comSepDelim);
 	const fieldOverrides = !args.fields ? null : args.fields.split(comSepDelim);
 	const delim = args.delim == 'tab' || !args.delim ? '\t' : (args.delim == 'com' ? ',' : (args.delim == 'pipe' ? '|' : args.delim));
 	const csvFileName = args.input || 'import.csv';
@@ -131,7 +133,7 @@
 
 		//...skip if is contrary to limit/offset or skip rules
 		if (args.offset && i < parseInt(args.offset)) return;
-		if (args.limit && i > parseInt(args.limit) + parseInt(args.offset || 0)) return;
+		if (args.limit && i > parseInt(args.limit - (!args.offset ? 0 : 1)) + parseInt(args.offset || 0)) return;
 		if (args.skip && args.skip.split(comSepDelim).find(skipRule => row.indexOf(skipRule))) return;
 
 		//...establish cell(s)
@@ -144,6 +146,9 @@
 
 		//...iterate over fields...
 		fields.forEach((field, i) => {
+
+			//...skip field?
+			if (skipFields && skipFields.includes(field)) return;
 
 			//...normal data column
 			if (!['_tags', '_id'].includes(field)) {
@@ -184,7 +189,7 @@
 			if (entry.sys.id) ret._id = entry.sys.id;
 			Object.entries(entry.fields).forEach(([field, localeVals]) => {
 				Object.entries(localeVals).forEach(([locale, val]) => {
-					ret[`${field}[${locale}]`] = typeof val != 'object' ? val : `${val.sys.linkType != 'Asset' ? 'R' : 'Asset r'}ef ${val.sys.id}`;
+					ret[`${field}[${locale}]`] = typeof val != 'object' || val === null ? val : `${val.sys.linkType != 'Asset' ? 'R' : 'Asset r'}ef ${val.sys.id}`;
 				});
 			})
 			return ret;
@@ -206,10 +211,10 @@
 	fs.unlink(jsonFileName, err => {});
 
 	//util - validate incoming com-sep field=val args
-	function validateFieldValListArgs(arg) {
+	function validateFieldValListArgs(arg, noVals) {
 		let ptnPart = '[\\w-\\[\\]]+';
-		if (!new RegExp(`^(${ptnPart}=[^${comSepDelim}]+)(${comSepDelim}${ptnPart}=[^${comSepDelim}]+)*`).test(args[arg]))
-			return console.error(cnslCols.red, `${arg} must be in format field=val${comSepDelim}field2=val2 etc`);
+		if (!new RegExp(`^(${ptnPart}${!noVals ? `=[^${comSepDelim}]+` : ''})(${comSepDelim}${ptnPart}${!noVals ? `=[^${comSepDelim}]+` : ''})*`).test(args[arg]))
+			return console.error(cnslCols.red, `${arg} must be in format field${!noVals ? '=val' : ''}${comSepDelim}field2${!noVals ? '=val2' : ''} etc`);
 		return 1;
 	}
 
@@ -224,11 +229,12 @@
 		return handleLatLng(handleValType(handleRef(val)));
 	}
 
-	//util - handle val type - cast 'true' and 'false' to actual booleans, and numbers to actual numbers, unless $nocast passed
+	//util - handle val type cast string representations of non-string primitives
 	function handleValType(val) {
 		if (args.nocast) return val;
 		if (val == 'true') val = true;
 		if (val == 'false') val = false;
+		if (val == 'null') val = null;
 		if (parseFloat(val)) val = parseFloat(val);
 		return val;
 	}
