@@ -74,6 +74,7 @@ Valid arguments are as follows.
 - `offset` - a 1-index offset (row) to begin reading data from in your input file (optional)
 - `limit` - a limit as to the number of rows to process (optional)
 - `skip` - a com-sep list of strings which, if any isfound in a row (any column), will cause that row to be skipped (optional)
+- `skipfields` - a com-sep list of field IDs to ignore from the input (optional)
 - `nocast` - ordinarily, numbers, true and false will be cast to their integer/boolean equivalents when data is passed to Contentful. Pass true to prevent this (i.e. if you literally want to pass "true" not `true`) (optional)
 - `tagall` - a com-sep list of (existing) tags to tag all entries with. You can also specify row-specific tags. See [Tagging items](#user-content-tagging-items)
 - `comsepdelim` - the delimiter to look for in **all** arguments that accept a com-sep list (optional; default: ",")
