@@ -250,7 +250,7 @@
 		if (typeof val != 'string') return val;
 		let isRef = val.match(/^ref(a)?-(.+)/);
 		if (!isRef) return val;
-		let obj = {...refTmplt};
+		let obj = JSON.parse(JSON.stringify(refTmplt));
 		obj.sys.id = isRef[2];
 		obj.sys.linkType = !isRef[1] ? 'Entry' : 'Asset'
 		return obj;
