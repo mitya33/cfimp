@@ -32,6 +32,7 @@
 		'env',
 		'space',
 		'preview',
+		'publish',
 		'skipfields',
 		'offset',
 		'skiprows',
@@ -143,6 +144,9 @@
 		//...clone entry template
 		let newObj = {...JSON.parse(JSON.stringify(entryTmplt))};
 
+		//...publish?
+		if (args.publish) Object.assign(newObj.sys, {publishedVersion: 1, id: genId()});
+
 		//...iterate over fields...
 		fields.forEach((field, i) => {
 
@@ -181,18 +185,21 @@
 
 	//preview only?
 	if (args.preview)
-		return console.log('Proposing to import/update the following data:\n', JSON.stringify(data.entries.map(entry => {
-			ret = {
-				_tags: entry.metadata.tags.map(obj => obj.sys.id)
-			};
-			if (entry.sys.id) ret._id = entry.sys.id;
-			Object.entries(entry.fields).forEach(([field, localeVals]) => {
-				Object.entries(localeVals).forEach(([locale, val]) => {
-					ret[`${field}[${locale}]`] = typeof val != 'object' || val === null ? val : `${val.sys.linkType != 'Asset' ? 'R' : 'Asset r'}ef ${val.sys.id}`;
-				});
-			})
-			return ret;
-		}), null, '   '));
+		return console.log(
+			`Proposing to import/update${!args.publish ? '' : ' *and publish*'} the following data:\n`,
+			JSON.stringify(data.entries.map(entry => {
+				ret = {
+					_tags: entry.metadata.tags.map(obj => obj.sys.id)
+				};
+				if (entry.sys.id) ret._id = entry.sys.id;
+				Object.entries(entry.fields).forEach(([field, localeVals]) => {
+					Object.entries(localeVals).forEach(([locale, val]) => {
+						ret[`${field}[${locale}]`] = typeof val != 'object' || val === null ? val : `${val.sys.linkType != 'Asset' ? 'R' : 'Asset r'}ef ${val.sys.id}`;
+					});
+				})
+				return ret;
+			}), null, '   ')
+		);
 
 	//write JSON file
 	try {
@@ -267,6 +274,14 @@
 	//util - split field ID from locale in strings like foo[en-GB]
 	function splitFieldIdAndLocale(str) {
 		return str.split(/\[(?=[\w-]+\]$)/).map(part => part.replace(/\]$/, ''));
+	}
+
+	//util - generate Contentful ID - prefixed with 'cfimp' to avoid clashes with Contentful-generated IDs
+	function genId() {
+		let ret = '',
+			chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ-_0123456789';
+		while (ret.length < 22) ret += chars[Math.floor(Math.random() * chars.length)];
+		return 'cfimp.'+ret;
 	}
 
 })();
