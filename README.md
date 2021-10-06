@@ -73,11 +73,11 @@ Valid arguments are as follows.
 - `enc` - the file encoding for your data (you shouldn't need to change this) - one of "utf8", "ascii" or "base64" (optional; default: "utf8")
 - `offset` - a 1-index offset (row) to begin reading data from in your input file (optional)
 - `limit` - a limit as to the number of rows to process (optional)
-- `skip` - a com-sep list of strings which, if any isfound in a row (any column), will cause that row to be skipped (optional)
-- `skipfields` - a com-sep list of field IDs to ignore from the input (optional)
+- `skiprows` - a com-sep list of strings which, if any isfound in a row (any column), will cause that row to be skipped (optional)
+- `skipfields` - a com-sep list of field IDs to ignore from the input. Useful if your spreadsheet export contains columns you don't want to include (optional)
 - `nocast` - ordinarily, numbers, true and false will be cast to their integer/boolean equivalents when data is passed to Contentful. Pass true to prevent this (i.e. if you literally want to pass "true" not `true`) (optional)
 - `tagall` - a com-sep list of (existing) tags to tag all entries with. You can also specify row-specific tags. See [Tagging items](#user-content-tagging-items)
-- `comsepdelim` - the delimiter to look for in **all** arguments that accept a com-sep list (optional; default: ",")
+- `listdelim` - the delimiter to look for in **all** arguments that accept a list of arguments e.g. `dfltvals`, `fields` etc (optional; default: ",")
 - `mtoken` - a management token to authenticate with Contentful. You can omit this if you've already authenticated via `contentful login` (optional)
 
 ## Reference and asset links
@@ -178,7 +178,7 @@ Delimiters are factors in two areas of cfimp:
 - the delimiter used to separate the values in your input file
 - the delimiter used to separate any (normally) comma-separated pairings in arguments or `_tag` field values
 
-Both of these can be overriden - the former via the `delim` arg and the latter via the `comsepdelim` arg. Note that `comsepdelim` will apply to **all** occasions where cfimp is attempting to decipher something that it normally expects to be in com-sep format - so for example `_tags` fields, the `mergevals` [argument](#user-content-usage), and so on.
+Both of these can be overriden - the former via the `delim` arg and the latter via the `listdelim` arg. Note that `listdelim` will apply to **all** occasions where cfimp is attempting to decipher something that it normally expects to be in com-sep format - so for example `_tags` fields, the `mergevals` [argument](#user-content-usage), and so on.
 
 # Troubleshooting
 
@@ -192,7 +192,7 @@ npx cfimp -preview -limit:1 <other args>
 
 A limit is handy in order to avoid numerous terminal screens of data.
 
-If you find cfimp is deriving or malformed bad data, **check the `delim` and `comSepDelim`** args.
+If you find cfimp is deriving or malformed bad data, **check the `delim` and `listdelim`** args.
 
 # Like this?
 

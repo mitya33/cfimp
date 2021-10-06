@@ -34,12 +34,12 @@
 		'preview',
 		'skipfields',
 		'offset',
-		'skip',
+		'skiprows',
 		'limit',
 		'nocast',
 		'tagall',
 		'input',
-		'comsepdelim',
+		'listdelim',
 		'mtoken'
 	];
 	const args = {};
@@ -49,7 +49,7 @@
 		args[spl[0]] = spl[1] || true;
 	});
 	const errArg = ['model', 'space', 'locale'].find(arg => !args[arg]);
-	const comSepDelim = args.comsepdelim || ',';
+	const listDelim = args.listdelim || ',';
 	if (errArg) return console.error(cnslCols.red, `$${errArg} must be passed`);
 	if (args.offset && !validateIntArgs('offset')) return;
 	if (args.limit && !validateIntArgs('limit')) return;
@@ -57,10 +57,10 @@
 	if (args.dfltvals && !validateFieldValListArgs('dfltvals')) return;
 	if (args.skipfields && !validateFieldValListArgs('skipfields', 1)) return;
 	if (args.fields && !validateFieldValListArgs('fields', 1)) return;
-	const mergeVals = !args.mergevals ? null : args.mergevals.split(comSepDelim);
-	const dfltVals = !args.dfltvals ? null : args.dfltvals.split(comSepDelim);
-	const skipFields = !args.skipfields ? null : args.skipfields.split(comSepDelim);
-	const fieldOverrides = !args.fields ? null : args.fields.split(comSepDelim);
+	const mergeVals = !args.mergevals ? null : args.mergevals.split(listDelim);
+	const dfltVals = !args.dfltvals ? null : args.dfltvals.split(listDelim);
+	const skipFields = !args.skipfields ? null : args.skipfields.split(listDelim);
+	const fieldOverrides = !args.fields ? null : args.fields.split(listDelim);
 	const delim = args.delim == 'tab' || !args.delim ? '\t' : (args.delim == 'com' ? ',' : (args.delim == 'pipe' ? '|' : args.delim));
 	const csvFileName = args.input || 'import.csv';
 	const env = args.env || 'master';
@@ -134,7 +134,7 @@
 		//...skip if is contrary to limit/offset or skip rules
 		if (args.offset && i < parseInt(args.offset)) return;
 		if (args.limit && i > parseInt(args.limit - (!args.offset ? 0 : 1)) + parseInt(args.offset || 0)) return;
-		if (args.skip && args.skip.split(comSepDelim).find(skipRule => row.indexOf(skipRule))) return;
+		if (args.skiprows && args.skiprows.split(listDelim).find(skipRule => row.indexOf(skipRule))) return;
 
 		//...establish cell(s)
 		let cells = fields.length > 1 ? row.split(delim) : row;
@@ -162,7 +162,7 @@
 
 			//special _id (existing item) or _tags columns
 			} else if (field == '_tags')
-				cells[i].split(comSepDelim).forEach(tag => addTag(tag, newObj));
+				cells[i].split(listDelim).forEach(tag => addTag(tag, newObj));
 			else
 				newObj.sys.id = cells[i];
 		});
@@ -173,7 +173,7 @@
 				fieldIdLocaleSpl = splitFieldIdAndLocale(fieldValSpl[0]);
 			newObj.fields[fieldIdLocaleSpl[0]] = {...(newObj.fields[fieldIdLocaleSpl[0]] || {}), [!fieldIdLocaleSpl[1] ? args.locale : fieldIdLocaleSpl[1]]: handleFieldVal(fieldValSpl[1])};
 		});
-		args.tagall && args.tagall.split(comSepDelim).forEach(tag => addTag(tag, newObj));
+		args.tagall && args.tagall.split(listDelim).forEach(tag => addTag(tag, newObj));
 
 		//...log prepared entry
 		data.entries.push(newObj);
@@ -213,8 +213,8 @@
 	//util - validate incoming com-sep field=val args
 	function validateFieldValListArgs(arg, noVals) {
 		let ptnPart = '[\\w-\\[\\]]+';
-		if (!new RegExp(`^(${ptnPart}${!noVals ? `=[^${comSepDelim}]+` : ''})(${comSepDelim}${ptnPart}${!noVals ? `=[^${comSepDelim}]+` : ''})*`).test(args[arg]))
-			return console.error(cnslCols.red, `${arg} must be in format field${!noVals ? '=val' : ''}${comSepDelim}field2${!noVals ? '=val2' : ''} etc`);
+		if (!new RegExp(`^(${ptnPart}${!noVals ? `=[^${listDelim}]+` : ''})(${listDelim}${ptnPart}${!noVals ? `=[^${listDelim}]+` : ''})*`).test(args[arg]))
+			return console.error(cnslCols.red, `${arg} must be in format field${!noVals ? '=val' : ''}${listDelim}field2${!noVals ? '=val2' : ''} etc`);
 		return 1;
 	}
 
