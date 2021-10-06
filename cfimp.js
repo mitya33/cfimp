@@ -77,7 +77,6 @@
 	if (!args.fields) console.info(cnslCols.blue, '$fields not passed; inferring field IDs from row in data file');
 	if (!args.env) console.info(cnslCols.blue, '$env not passed; assuming "master"');
 	if (!args.enc) console.info(cnslCols.blue, '$enc not passed; assuming utf8');
-	if (!args.fields) console.info(cnslCols.blue, '$fields not passed; reading field IDs from first line of data file');
 
 	//import command structure
 	const importCmd = `contentful space import --environment-id ${env} --space-id ${args.space} --content-file ${jsonFileName} ${args.mtoken || ''}`;
