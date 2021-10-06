@@ -235,7 +235,7 @@
 		if (val == 'true') val = true;
 		if (val == 'false') val = false;
 		if (val == 'null') val = null;
-		if (parseFloat(val)) val = parseFloat(val);
+		if (parseFloat(val) && /^\d+(\.\d+)?$/.test(val)) val = '*';
 		return val;
 	}
 
