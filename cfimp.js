@@ -266,7 +266,7 @@
 	function handleLatLng(val) {
 		if (!/^-?\d+\.\d+ *, *-?\d+\.\d+$/.test(val)) return val;
 		let spl = val.split(/ *, */);
-		return {lat: spl[0], lon: spl[1]};
+		return {lat: parseFloat(spl[0]), lon: parseFloat(spl[1])};
 	}
 
 	//util - add tag
