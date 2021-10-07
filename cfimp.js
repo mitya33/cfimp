@@ -263,7 +263,7 @@
 
 	//util - handle lat/lng value - separate out parts as object
 	function handleLatLng(val) {
-		if (!/^\d+\.\d+ *, *\d+\.\d+$/.test(val)) return val;
+		if (!/^-?\d+\.\d+ *, *-?\d+\.\d+$/.test(val)) return val;
 		let spl = val.split(/ *, */);
 		return {lat: spl[0], lon: spl[1]};
 	}
