@@ -134,7 +134,12 @@
 		//...skip if is contrary to limit/offset or skip rules
 		if (args.offset && i < parseInt(args.offset)) return;
 		if (args.limit && i > parseInt(args.limit - (!args.offset ? 0 : 1)) + parseInt(args.offset || 0)) return;
-		if (args.skiprows && args.skiprows.split(listDelim).find(skipRule => row.indexOf(skipRule))) return;
+		if (args.skiprows) {
+			let negate = args.skiprows[0] == '!',
+				terms = args.skiprows.replace(/^!/, '').split(listDelim),
+				inRow = terms.find(skipRule => row.includes(skipRule));
+		 	if ((!negate && inRow) || (negate && !inRow)) return;
+		 }
 
 		//...establish cell(s)
 		let cells = fields.length > 1 ? row.split(delim) : row;
@@ -194,7 +199,7 @@
 				if (entry.sys.id) ret._id = entry.sys.id;
 				Object.entries(entry.fields).forEach(([field, localeVals]) => {
 					Object.entries(localeVals).forEach(([locale, val]) => {
-						ret[`${field}[${locale}]`] = typeof val != 'object' || val === null ? val : `${val.sys.linkType != 'Asset' ? 'R' : 'Asset r'}ef ${val.sys.id}`;
+						ret[`${field}[${locale}]`] = !val?.sys ? val : `${val.sys.linkType != 'Asset' ? 'R' : 'Asset r'}ef ${val.sys.id}`;
 					});
 				})
 				return ret;

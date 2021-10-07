@@ -63,21 +63,21 @@ Valid arguments are as follows.
 - `input` - path to the input file (optional; default: "input.csv")
 - `space` - the ID of the Contentful space to write to (required)
 - `model` - the ID of the Contentful model (content type) to write to (required)
-- `locale` - the locale, as defined in Contentful, e.g. "[en-GB]" (required). See [Writing to multiple locales](#user-content-multiple-locales)
+- `locale` - the locale, as defined in Contentful, e.g. "[en-GB]" (required). See [Writing to multiple locales](#user-content-multiple-locales) (required)
 - `preview*` - if passed, shows a preview of the data that will be written to Contentful; no write is performed. See [Troubleshooting](#user-content-troubleshooting) (optional)
 - `env` - the ID of the Contentful environment to use (optional; default: "master")
 - `publish*` - sets the imported/updated entries to "published" status rather than "draft" (optional)
-- `mergevals` - a com-sep list of `field=value` pairs - to merge into all rows (optional) See [Merge and default values](#user-content-merged-and-default-values)
-- `dfltvals` - a com-sep list of `field=value` defaults to be used anywhere a row has empty cells. See [Merge and default values](#user-content-merged-and-default-vaues)
+- `mergevals` - a com-sep list of `field=value` pairs - to merge into all rows. See [Merge and default values](#user-content-merged-and-default-values) (optional)
+- `dfltvals` - a com-sep list of `field=value` defaults to be used anywhere a row has empty cells. See [Merge and default values](#user-content-merged-and-default-vaues) (optional)
 - `delim` - the delimiter separating columns (for multi-column files) - one of "tab", "com" (comma) or any other string (optional; default: "tab")
 - `fields` - the fields to import into. If omitted, cfimp will assume the first row of the input data denotes the fields (optional)
 - `enc` - the file encoding for your data (you shouldn't need to change this) - one of "utf8", "ascii" or "base64" (optional; default: "utf8")
 - `offset` - a 1-index offset (row) to begin reading data from in your input file (optional)
 - `limit` - a limit as to the number of rows to process (optional)
-- `skiprows` - a com-sep list of strings which, if any isfound in a row (any column), will cause that row to be skipped (optional)
+- `skiprows` - a com-sep list of strings which, if any is found in a row (any column), will cause that row to be skipped. The logic can be inverted. See [Filtering rows](#user-content-filtering-rows) (optional)
 - `skipfields` - a com-sep list of field IDs to ignore from the input. Useful if your spreadsheet export contains columns you don't want to include (optional)
 - `nocast` - ordinarily, numbers, true and false will be cast to their integer/boolean equivalents when data is passed to Contentful. Pass true to prevent this (i.e. if you literally want to pass "true" not `true`) (optional)
-- `tagall` - a com-sep list of (existing) tags to tag all entries with. You can also specify row-specific tags. See [Tagging items](#user-content-tagging-items)
+- `tagall` - a com-sep list of (existing) tags to tag all entries with. You can also specify row-specific tags. See [Tagging items](#user-content-tagging-items) (optional)
 - `listdelim` - the delimiter to look for in **all** arguments that accept a list of arguments e.g. `dfltvals`, `fields` etc (optional; default: ",")
 - `mtoken` - a management token to authenticate with Contentful. You can omit this if you've already authenticated via `contentful login` (optional)
 
@@ -170,6 +170,24 @@ You can also tag *all* items at runtime via the `tagall` argument.
 
 ```
 npx cfimp --space:12345 -model:authors -tagall:foo,bar
+```
+
+# Filtering rows
+
+It's possible to stipulate which rows you do, or do not, want to be imported/updated from your input file, via the `skiprows` argument.
+
+This argument is used to whitelist or blacklist certain rows, and accepts a com-sep list of values to blacklist or, if the entire argument value is prefixed with `!`, to allow.
+
+The following will blacklist (skip) any rows that contain, in any column, "foo" OR "bar"
+
+```
+cfimp ... -skiprows:foo,bar
+```
+
+The following will whitelist (include) any rows that contain "foo" OR "bar"; all other rows will be skipped.
+
+```
+cfimp ... -skiprows:!foo,bar
 ```
 
 # Publishing entries
