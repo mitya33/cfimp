@@ -217,6 +217,7 @@
 	try {
 		childProcess.execSync(importCmd, {stdio: 'inherit'});
 	} catch(e) {
+		fs.unlink(jsonFileName, err => {});
 		return console.error(cnslCols.red, e);
 	}
 	fs.unlink(jsonFileName, err => {});
