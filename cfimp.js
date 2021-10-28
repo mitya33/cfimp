@@ -166,7 +166,7 @@
 					dfltVal = !dfltVals ? null : dfltVals.filter(pair => pair.split('=')[0] == field);
 				if (dfltVal) dfltVal = !dfltVal.length ? null : dfltVal[0].split('=')[1];
 				let val = cells[i] || dfltVal;
-				newObj.fields[field] = {...(newObj.fields[field] || {}), [locale]: handleFieldVal(val)};
+				newObj.fields[field] = {...(newObj.fields[field] || {}), [locale]: handleFieldVal(val.trim())};
 
 			//special _id (existing item) or _tags columns
 			} else if (field == '_tags')
@@ -179,7 +179,7 @@
 		mergeVals && mergeVals.forEach(pair => {
 			let fieldValSpl = pair.split('='),
 				fieldIdLocaleSpl = splitFieldIdAndLocale(fieldValSpl[0]);
-			newObj.fields[fieldIdLocaleSpl[0]] = {...(newObj.fields[fieldIdLocaleSpl[0]] || {}), [!fieldIdLocaleSpl[1] ? args.locale : fieldIdLocaleSpl[1]]: handleFieldVal(fieldValSpl[1])};
+			newObj.fields[fieldIdLocaleSpl[0]] = {...(newObj.fields[fieldIdLocaleSpl[0]] || {}), [!fieldIdLocaleSpl[1] ? args.locale : fieldIdLocaleSpl[1]]: handleFieldVal(fieldValSpl[1].trim())};
 		});
 		args.tagall && args.tagall.split(listDelim).forEach(tag => addTag(tag, newObj));
 
