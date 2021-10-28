@@ -121,6 +121,8 @@ npx cfimp --space:12345 -model:authors -locale:en-GB -mergevals:age=51
 
 ## Updating existing items
 
+> **Be careful** when updating existing items; be sure to specify values for all fields, because Contentful's import service doesn't retain values for omitted fields.
+
 cfimp can be used to update existing items in Contentful rather than import (create) new ones. To do this, include an `_id` column in your data. This will be inferred as the internal Contentful ID of the item, and will update it.
 
 ```
@@ -171,6 +173,22 @@ You can also tag *all* items at runtime via the `tagall` argument.
 ```
 npx cfimp --space:12345 -model:authors -tagall:foo,bar
 ```
+
+# Importing geopositional data
+
+When importing geopositional data, specify coordinates in the format
+
+```
+lat,lng
+```
+
+i.e.
+
+```
+51.467283887530094,-0.24193970047025806
+```
+
+cfimp will convert this into an object before writing to Contentful. Note also that this means you'll need to use a non-comma value for `delim`, since the geoposition data itself contains a comma.
 
 # Filtering rows
 
