@@ -166,7 +166,7 @@
 					dfltVal = !dfltVals ? null : dfltVals.filter(pair => pair.split('=')[0] == field);
 				if (dfltVal) dfltVal = !dfltVal.length ? null : dfltVal[0].split('=')[1];
 				let val = cells[i] || dfltVal;
-				newObj.fields[field] = {...(newObj.fields[field] || {}), [locale]: handleFieldVal(val.trim())};
+				newObj.fields[field] = {...(newObj.fields[field] || {}), [locale]: handleFieldVal(val?.trim ? val.trim() : val)};
 
 			//special _id (existing item) or _tags columns
 			} else if (field == '_tags')
