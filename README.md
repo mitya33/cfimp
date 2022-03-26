@@ -15,7 +15,7 @@ Contentful doesn't make it super easy to import data. There's no GUI; instead th
 ## Examples
 
 ```
-#Import comma-separated data from input.csv to space "12345" / content type (model) "authors" / locale "en-GB"
+#Import comma-separated data from import.csv to space "12345" / content type (model) "authors" / locale "en-GB"
 npx cfimp --space:12345 -model:authors -locale:en-GB 
 
 #Also specify some tags (for all rows)
@@ -60,7 +60,7 @@ Arguments are specified in the format `-arg:val` or, where the argument doesn't 
 
 Valid arguments are as follows.
 
-- `input` - path to the input file (optional; default: "input.csv")
+- `input` - path to the input file (optional; default: "import.csv")
 - `space` - the ID of the Contentful space to write to (required)
 - `model` - the ID of the Contentful model (content type) to write to (required)
 - `locale` - the locale, as defined in Contentful, e.g. "[en-GB]" (required). See [Writing to multiple locales](#user-content-multiple-locales) (required)

@@ -73,11 +73,11 @@
 	} catch(e) { return console.error(cnslCols.red, `File "${csvFileName}" does not exist or it could not be read`); }
 
 	//notices
-	if (!args.input) console.info(cnslCols.blue, '$import not passed; assuming "import.csv"');
-	if (!args.delim) console.info(cnslCols.blue, '$delim not passed; assuming tab');
-	if (!args.fields) console.info(cnslCols.blue, '$fields not passed; inferring field IDs from row in data file');
-	if (!args.env) console.info(cnslCols.blue, '$env not passed; assuming "master"');
-	if (!args.enc) console.info(cnslCols.blue, '$enc not passed; assuming utf8');
+	if (!args.input) console.info(cnslCols.blue, 'Notice: $input not passed; assuming "import.csv"');
+	if (!args.delim) console.info(cnslCols.blue, 'Notice: $delim not passed; assuming tab');
+	if (!args.fields) console.info(cnslCols.blue, 'Notice: $fields not passed; inferring field IDs from first row in data file');
+	if (!args.env) console.info(cnslCols.blue, 'Notice: $env not passed; assuming "master"');
+	if (!args.enc) console.info(cnslCols.blue, 'Notice: $enc not passed; assuming utf8');
 
 	//import command structure
 	const importCmd = `contentful space import --environment-id ${env} --space-id ${args.space} --content-file ${jsonFileName} ${args.mtoken || ''}`;
