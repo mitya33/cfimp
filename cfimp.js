@@ -247,7 +247,7 @@
 		if (val == 'true') val = true;
 		if (val == 'false') val = false;
 		if (val == 'null') val = null;
-		if (parseFloat(val) && /^\d+(\.\d+)?$/.test(val)) val = '*';
+		if (parseFloat(val) && /^\d+(\.\d+)?$/.test(val)) val = parseFloat(val);
 		return val;
 	}
 
