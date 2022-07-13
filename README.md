@@ -16,16 +16,16 @@ Contentful doesn't make it super easy to import data. There's no GUI; instead th
 
 ```
 #Import comma-separated data from import.csv to space "12345" / content type (model) "authors" / locale "en-GB"
-npx cfimp --space:12345 -model:authors -locale:en-GB 
+npx cfimp -space:12345 -model:authors -locale:en-GB 
 
 #Also specify some tags (for all rows)
-npx cfimp --space:12345 -model:authors -locale:en-GB -tags:foo,bar
+npx cfimp -space:12345 -model:authors -locale:en-GB -tags:foo,bar
 
 #Specify a fallback (default) value "bar" for the "foo" field
-npx cfimp --space:12345 -model:authors -locale:en-GB -dfltvals:foo=bar
+npx cfimp -space:12345 -model:authors -locale:en-GB -dfltvals:foo=bar
 
 #Preview the generated JSON of the first entry - no actual import takes place
-npx cfimp --space:12345 -model:authors -locale:en-GB -preview
+npx cfimp -space:12345 -model:authors -locale:en-GB -preview
 ```
 
 ## Prerequisites
@@ -63,7 +63,7 @@ Valid arguments are as follows.
 - `input` - path to the input file (optional; default: "import.csv")
 - `space` - the ID of the Contentful space to write to (required)
 - `model` - the ID of the Contentful model (content type) to write to (required)
-- `locale` - the locale, as defined in Contentful, e.g. "[en-GB]" (required). See [Writing to multiple locales](#user-content-multiple-locales) (required)
+- `locale` - the locale, as defined in Contentful, e.g. "[en-GB]". See [Writing to multiple locales](#user-content-multiple-locales) (required)
 - `preview*` - if passed, shows a preview of the data that will be written to Contentful; no write is performed. See [Troubleshooting](#user-content-troubleshooting) (optional)
 - `env` - the ID of the Contentful environment to use (optional; default: "master")
 - `publish*` - sets the imported/updated entries to "published" status rather than "draft" (optional)
@@ -87,7 +87,7 @@ It's possible to link to **existing** assets or references (i.e. foreign items i
 
 In both cases, you'll need to know the ID of the item you're linking to.
 
-Let's say you have a field on your content type called "authorBioPhoto" and, in preparing your data, you've ascertained the various asset IDs you want to link each author to. Your data would look something like:
+Suppose you had a content type of authors and had a field, `authorPhoto` which was an asset field. We'd link authors to their photos like so:
 
 ```
 forename	surname	authorBioPhoto
@@ -95,10 +95,10 @@ Philippa	Gregory	refa-12345
 Desdemona	Johnson	refa-67890
 ```
 
-If for some reason all our authors have the same face and photo, we can even specify this at runtime with a merge value (see `mergevals`):
+If for some reason all our authors have the same face and photo, we can even specify this at runtime with a merge value (ee [Merge and default values](#user-content-merged-and-default-values)):
 
 ```
-npx cfimp --space:12345 -model:authors -locale:en-GB -mergevals:authoBioPhoto=refa-12345
+npx cfimp -space:12345 -model:authors -locale:en-GB -mergevals:authoBioPhoto=refa-12345
 ```
 
 ## Merged and default values
@@ -110,13 +110,13 @@ It's also possible to merge extra data with all rows.
 Let's say you have a field in your data, "popular", with some rows having "yes" as a value. For all others, with no value, you want to insert "no".
 
 ```
-npx cfimp --space:12345 -model:authors -locale:en-GB -dfltvals:popular=no
+npx cfimp -space:12345 -model:authors -locale:en-GB -dfltvals:popular=no
 ```
 
 Or let's say you want to add an extra field to all rows. Perhaps you meant (but forgot) to add an "age" column to your spreadsheet data before exporting it, and it so happens that, surprisingly, all the authors in your data are 51. We can add this via:
 
 ```
-npx cfimp --space:12345 -model:authors -locale:en-GB -mergevals:age=51
+npx cfimp -space:12345 -model:authors -locale:en-GB -mergevals:age=51
 ```
 
 ## Updating existing items
@@ -154,7 +154,7 @@ Berlin	Berlina
 ...or via the `fields` argument, if you're specifying field IDs at runtime.
 
 ```
-npx cfimp --space:12345 -model:cities -locale:en-GB -fields:city,city[es-SP]
+npx cfimp -space:12345 -model:cities -locale:en-GB -fields:city,city[es-SP]
 ```
 
 ## Tagging items
@@ -171,7 +171,7 @@ Philippa	Gregory	foo,bar
 You can also tag *all* items at runtime via the `tagall` argument.
 
 ```
-npx cfimp --space:12345 -model:authors -tagall:foo,bar
+npx cfimp -space:12345 -model:authors -tagall:foo,bar
 ```
 
 # Importing geopositional data
