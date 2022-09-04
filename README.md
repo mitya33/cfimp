@@ -65,6 +65,7 @@ Valid arguments are as follows.
 - `model` - the ID of the Contentful model (content type) to write to (required)
 - `locale` - the locale, as defined in Contentful, e.g. "[en-GB]". See [Writing to multiple locales](#user-content-multiple-locales) (required)
 - `preview*` - if passed, shows a preview of the data that will be written to Contentful; no write is performed. See [Troubleshooting](#user-content-troubleshooting) (optional)
+- `previewfile*` - if passed, quits after generating the Contentfil JSON file, so you can inspect it. See [Troubleshooting](#user-content-troubleshooting) (optional)
 - `env` - the ID of the Contentful environment to use (optional; default: "master")
 - `publish*` - sets the imported/updated entries to "published" status rather than "draft" (optional)
 - `mergevals` - a com-sep list of `field=value` pairs - to merge into all rows. See [Merge and default values](#user-content-merged-and-default-values) (optional)
@@ -229,13 +230,14 @@ Both of these can be overriden - the former via the `delim` arg and the latter v
 
 It's HIGHLY recommended to **preview the generated data** before running the actual import/data. This shows you what cfimp intends to send to Contentful for import/update.
 
-You can do this via the preview argument, i.e.
+This can be done in two ways:
 
-```
-npx cfimp -preview -limit:1 <other args>
-```
+- Via the `preview` argument: this should be considered preview 'lite', and will spit out in the console the data cfimp has compiled, before converting to the JSON format Contentful requires
+- Viw the `previewfile` argument: this goes a step further, and actually creates the JSON file Contentful requires that effects the import/update. Once created, you can inspect this file.
 
-A limit is handy in order to avoid numerous terminal screens of data.
+Note: Neither argument expects a value
+
+Additionally, a limit is handy in order to avoid numerous terminal screens of data.
 
 If you find cfimp is deriving or malformed bad data, **check the `delim` and `listdelim`** args.
 

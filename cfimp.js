@@ -32,6 +32,7 @@
 		'env',
 		'space',
 		'preview',
+		'filepreview',
 		'publish',
 		'skipfields',
 		'offset',
@@ -212,6 +213,8 @@
 			fs.writeFile(jsonFileName, JSON.stringify(data), encoding, err => !err ? res() : rej(err));
 		});
 	} catch(e) { return console.error(cnslCols.red, e); }
+	if (args.filepreview)
+		return console.info(cnslCols.blue, 'Notice: quit early just to build Contentful import file for preview purposes; file is '+jsonFileName);
 
 	//run import - delete JSON file after
 	try {
