@@ -233,9 +233,9 @@ It's HIGHLY recommended to **preview the generated data** before running the act
 This can be done in two ways:
 
 - Via the `preview` argument: this should be considered preview 'lite', and will spit out in the console the data cfimp has compiled, before converting to the JSON format Contentful requires
-- Viw the `previewfile` argument: this goes a step further, and actually creates the JSON file Contentful requires that effects the import/update. Once created, you can inspect this file.
+- Via the `previewfile` argument: this goes a step further, and actually creates the JSON file Contentful requires that effects the import/update. Once created, you can inspect this file.
 
-Note: Neither argument expects a value
+(Note: Neither argument expects a value.)
 
 Additionally, a limit is handy in order to avoid numerous terminal screens of data.
 
