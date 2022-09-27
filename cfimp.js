@@ -3,9 +3,9 @@
 /* -----------
 | CONTENTFUL EI - Contentful easy importer. Easy-to-use entry importer for the Contentful headless CMS.
 |	@docs/links:
-|		- https://mitya.uk/projects/contentful-ei
-|		- https://github.com/mitya33/contentful-ei
-|		- https://npmjs.com/package/contentful-ei
+|		- https://mitya.uk/projects/cfimp
+|		- https://github.com/mitya33/cfimp
+|		- https://npmjs.com/package/cfimp
 |	@author: Andrew Croxall (@mitya33)
 ----------- */
 
@@ -20,7 +20,7 @@
 		red: '\x1b[31m%s\x1b[0m'
 	};
 
-	//handle incoming args & set some config
+	//valid incoming args
 	const validArgs = [
 		'model',
 		'mergevals',
@@ -44,14 +44,19 @@
 		'listdelim',
 		'mtoken'
 	];
+
+	//parse vars - ~ weirdness is because, seemingly, in some contexts (e.g. running via `npx`) node interprets ":" as an
+	//arg delimiter and at other times (e.g. running via `node <script>`) it doesn't
 	const args = {};
-	process.argv.slice(2).forEach(arg => {
+	process.argv.slice(2).join('~').replace(/:~/g, ':').split('~').forEach(arg => {
 		const spl = arg.replace(/^-/, '').split(':');
 		if (!validArgs.includes(spl[0])) return console.info(cnslCols.blue, `Unrecognised arg, @${spl[0]}`);
 		args[spl[0]] = spl[1] || true;
 	});
 	const errArg = ['model', 'space', 'locale'].find(arg => !args[arg]);
 	const listDelim = args.listdelim || ',';
+
+	//arg validation
 	if (errArg) return console.error(cnslCols.red, `$${errArg} must be passed`);
 	if (args.offset && !validateIntArgs('offset')) return;
 	if (args.limit && !validateIntArgs('limit')) return;
@@ -67,6 +72,14 @@
 	const csvFileName = args.input || 'import.csv';
 	const env = args.env || 'master';
 	const encoding = args.enc || 'utf8';
+
+	//as with ~ weirdness (above), so too ",", when used as a list delim. This means list params end up as space-separated.
+	//Fix is to quote these args i.e. -fields:"foo,"bar" not -fields:foo,bar
+	for (let listVal of ['mergeVals', 'dfltVals', 'skipFields', 'fields'])
+		if (args[listVal] && args[listVal].split(' ').length > 2)
+			return console.error(cnslCols.red, `List vals must be quoted e.g. -fields:"foo,bar"`);
+
+	//get input data
 	try {
 		await new Promise((res, rej) => {
 			fs.access(csvFileName, err => !err ? res() : rej());
