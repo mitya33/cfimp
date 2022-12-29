@@ -42,8 +42,7 @@
 		'tagall',
 		'input',
 		'listdelim',
-		'mtoken',
-		'namespace'
+		'mtoken'
 	];
 
 	//parse vars - ~ weirdness is because, seemingly, in some contexts (e.g. running via `npx`) node interprets ":" as an
@@ -299,12 +298,12 @@
 		return str.split(/\[(?=[\w-]+\]$)/).map(part => part.replace(/\]$/, ''));
 	}
 
-	//util - generate Contentful ID - prefix with $namespace if provided
+	//util - generate Contentful ID (used for importing + publishing only)
 	function genId() {
 		let ret = '',
 			chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
 		while (ret.length < 11) ret += chars[Math.floor(Math.random() * chars.length)];
-		return (args.namespace || '')+ret;
+		return ret;
 	}
 
 })();
