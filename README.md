@@ -79,7 +79,7 @@ Valid arguments are as follows.
 - `skipfields` - a com-sep list of field IDs to ignore from the input. Useful if your spreadsheet export contains columns you don't want to include (optional)
 - `nocast` - ordinarily, numbers, true and false will be cast to their integer/boolean equivalents when data is passed to Contentful. Pass true to prevent this (i.e. if you literally want to pass "true" not `true`) (optional)
 - `tagall` - a com-sep list of (existing) tags to tag all entries with. You can also specify row-specific tags. See [Tagging items](#user-content-tagging-items) (optional)
-- `listdelim` - the delimiter to look for in **all** arguments that accept a list of arguments e.g. `dfltvals`, `fields` etc (optional; default: ",")
+- `listdelim` - the delimiter used within list values e.g. default values, tags (optional; default: ","). See [Delimiter overrides](#user-content-delimiter-overrides)
 - `mtoken` - a management token to authenticate with Contentful. You can omit this if you've already authenticated via `contentful login` (optional)
 
 ## Reference and asset links
@@ -106,15 +106,15 @@ npx cfimp -space:12345 -model:authors -locale:en-GB -mergevals:authoBioPhoto=ref
 
 It's possible to specify default fallback values for your data, which will take effect if the cell is empty for that field.
 
-It's also possible to merge extra data with all rows.
+It's also possible to merge extra data into all rows.
 
-Let's say you have a field in your data, "popular", with some rows having "yes" as a value. For all others, with no value, you want to insert "no".
+Let's say you have a field in your data, "popular", with some rows having "yes" as a value. For all others, with no value, you want to insert "no". We can accomplish this via the `dfltvals` [argument](#user-content-usage):
 
 ```
 npx cfimp -space:12345 -model:authors -locale:en-GB -dfltvals:popular=no
 ```
 
-Or let's say you want to add an extra field to all rows. Perhaps you meant (but forgot) to add an "age" column to your spreadsheet data before exporting it, and it so happens that, surprisingly, all the authors in your data are 51. We can add this via:
+Or let's say you want to add an extra field to all rows. Perhaps you meant (but forgot) to add an "age" column to your spreadsheet data before exporting it, and it so happens that, surprisingly, all the authors in your data are 51. We can accomplish this via the `mergevals` [argument](#user-content-usage):
 
 ```
 npx cfimp -space:12345 -model:authors -locale:en-GB -mergevals:age=51
@@ -174,6 +174,8 @@ You can also tag *all* items at runtime via the `tagall` argument.
 ```
 npx cfimp -space:12345 -model:authors -tagall:foo,bar
 ```
+
+Note: tags specified in this way are subject to the `listdelim` [argument](#user-content-usage).
 
 # Importing geopositional data
 

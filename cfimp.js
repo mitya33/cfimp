@@ -42,7 +42,8 @@
 		'tagall',
 		'input',
 		'listdelim',
-		'mtoken'
+		'mtoken',
+		'namespace'
 	];
 
 	//parse vars - ~ weirdness is because, seemingly, in some contexts (e.g. running via `npx`) node interprets ":" as an
@@ -238,7 +239,7 @@
 	}
 	fs.unlink(jsonFileName, err => {});
 
-	//util - validate incoming com-sep field=val args
+	//util - validate incoming list args e.g. $mergevals
 	function validateFieldValListArgs(arg, noVals) {
 		let ptnPart = '[\\w-\\[\\]]+';
 		if (!new RegExp(`^(${ptnPart}${!noVals ? `=[^${listDelim}]+` : ''})(${listDelim}${ptnPart}${!noVals ? `=[^${listDelim}]+` : ''})*`).test(args[arg]))
@@ -257,7 +258,7 @@
 		return handleLatLng(handleValType(handleRef(val)));
 	}
 
-	//util - handle val type cast string representations of non-string primitives
+	//util - handle cast string representations of primitives
 	function handleValType(val) {
 		if (args.nocast) return val;
 		if (val == 'true') val = true;
@@ -298,12 +299,12 @@
 		return str.split(/\[(?=[\w-]+\]$)/).map(part => part.replace(/\]$/, ''));
 	}
 
-	//util - generate Contentful ID - prefixed with 'cfimp' to avoid clashes with Contentful-generated IDs
+	//util - generate Contentful ID - prefix with $namespace if provided
 	function genId() {
 		let ret = '',
-			chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ-_0123456789';
-		while (ret.length < 22) ret += chars[Math.floor(Math.random() * chars.length)];
-		return 'cfimp.'+ret;
+			chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+		while (ret.length < 11) ret += chars[Math.floor(Math.random() * chars.length)];
+		return (args.namespace || '')+ret;
 	}
 
 })();
