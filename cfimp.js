@@ -1,5 +1,7 @@
 #!/usr/bin/env node
 
+const { parse } = require('papaparse');
+
 /* -----------
 | CONTENTFUL EI - Contentful easy importer. Easy-to-use entry importer for the Contentful headless CMS.
 |	@docs/links:
@@ -137,12 +139,22 @@
 			fs.readFile(csvFileName, encoding, (err, cntnt) => !err ? res(cntnt) : rej(err));
 		});
 	} catch(e) { return console.error(cnslCols.red, e); }
-	cntnt = cntnt.replace(/\s+$/, '');
+	
+	const rows = parse(cntnt, {
+		delimiter: delim,
+		quoteChar: '\"',
+		encoding: 'UTF-8',
+		skipEmptyLines: 'greedy',
+		header: true,
+		transformHeader: header => header.trim(),
+		error: function (error) {
+			console.error(error);
+		}
+	});
 
-	//establish row(s) and field(s) and iterate...
-	const rows = cntnt.split(/\r\n/);
-	const fields = fieldOverrides || rows.shift().split(delim);
-	rows.forEach((row, i) => {
+	const fields = rows.meta.fields;
+
+	rows.data.forEach((row, i) => {
 		i++;
 
 		//...skip if is contrary to limit/offset or skip rules
@@ -154,11 +166,6 @@
 				inRow = terms.find(skipRule => row.includes(skipRule));
 		 	if ((!negate && inRow) || (negate && !inRow)) return;
 		 }
-
-		//...establish cell(s)
-		let cells = fields.length > 1 ? row.split(delim) : row;
-		if (fields.length > 1 && cells.length < 2)
-			return console.error(cnslCols.red, `Quit while validating row ${i} - delimiter (${delim}) not found. No write operation was performed. Did you mean to set a different delimiter ($delim)?`);
 
 		//...clone entry template
 		let newObj = {...JSON.parse(JSON.stringify(entryTmplt))};
@@ -179,14 +186,14 @@
 				let locale = (fieldIdAndLocaleSpl[1] || args.locale),
 					dfltVal = !dfltVals ? null : dfltVals.filter(pair => pair.split('=')[0] == field);
 				if (dfltVal) dfltVal = !dfltVal.length ? null : dfltVal[0].split('=')[1];
-				let val = cells[i] || dfltVal;
+				let val = row[field] || dfltVal;
 				newObj.fields[field] = {...(newObj.fields[field] || {}), [locale]: handleFieldVal(val?.trim ? val.trim() : val)};
 
 			//special _id (existing item) or _tags columns
 			} else if (field == '_tags')
-				cells[i].split(listDelim).forEach(tag => addTag(tag, newObj));
+				row[field].split(listDelim).forEach(tag => addTag(tag, newObj));
 			else
-				newObj.sys.id = cells[i];
+				newObj.sys.id = row[field]
 		});
 
 		//...any merge data or tag-alls?
