@@ -3,7 +3,7 @@
 const { parse } = require('papaparse');
 
 /* -----------
-| CONTENTFUL EI - Contentful easy importer. Easy-to-use entry importer for the Contentful headless CMS.
+| CFIMP - Contentful easy importer. Easy-to-use entry importer for the Contentful headless CMS.
 |	@docs/links:
 |		- https://mitya.uk/projects/cfimp
 |		- https://github.com/mitya33/cfimp
@@ -163,7 +163,7 @@ const { parse } = require('papaparse');
 		if (args.skiprows) {
 			let negate = args.skiprows[0] == '!',
 				terms = args.skiprows.replace(/^!/, '').split(listDelim),
-				inRow = terms.find(skipRule => row.includes(skipRule));
+				inRow = terms.find((skipRule) => Object.values(row).includes(skipRule));
 		 	if ((!negate && inRow) || (negate && !inRow)) return;
 		 }
 
