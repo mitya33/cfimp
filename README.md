@@ -6,8 +6,6 @@ In the process of importing/updating, entries can optionally be linked to (exist
 
 cfimp cannot be used to create new assets, tags, models or anything other than entries.
 
-cfimp is best used via `npx` and doesn't need to be installed onto your machine.
-
 ## Why
 
 Contentful doesn't make it super easy to import data. There's no GUI; instead the `contentful-cli` tool has an import command, but it's [sparsely documented](https://www.contentful.com/developers/docs/tutorials/cli/import-and-export), and you first have to munge your data into JSON. There's no easy way to import spreadsheet-derived data. Further, Contentful doesn't make explicit what the structure of the JSON should be. 
@@ -16,27 +14,27 @@ Contentful doesn't make it super easy to import data. There's no GUI; instead th
 
 ```
 #Import comma-separated data from import.csv to space "12345" / content type (model) "authors" / locale "en-GB"
-npx cfimp -space:12345 -model:authors -locale:en-GB 
+cfimp -space:12345 -model:authors -locale:en-GB 
 
 #Also specify some tags (for all rows)
-npx cfimp -space:12345 -model:authors -locale:en-GB -tags:foo,bar
+cfimp -space:12345 -model:authors -locale:en-GB -tags:foo,bar
 
 #Specify a fallback (default) value "bar" for the "foo" field
-npx cfimp -space:12345 -model:authors -locale:en-GB -dfltvals:foo=bar
+cfimp -space:12345 -model:authors -locale:en-GB -dfltvals:foo=bar
 
 #Preview the generated JSON of the first entry - no actual import takes place
-npx cfimp -space:12345 -model:authors -locale:en-GB -preview
+cfimp -space:12345 -model:authors -locale:en-GB -preview
 ```
 
 ## Prerequisites
 
-1) Install [`contentful-cli`](https://www.npmjs.com/package/contentful-cli) globally.
+1. Install [`contentful-cli`](https://www.npmjs.com/package/contentful-cli) globally.
 
 ```
 npm install -g contentful-cli
 ```
 
-2) Authenticate with Contentful (optional).
+2. Authenticate with Contentful (optional).
 
 ```
 contentful login
@@ -44,16 +42,20 @@ contentful login
 
 Authenticating this way will save the credentials in your environment so you don't have to authenticate manually each time you use cfimp. If you'd rather do that instead, though, see the `mtoken` argument.
 
+3. Install cfimp globally
+
+```
+npm i -g cfimp
+```
+
 ## Usage
 
 > Note: the default delimiter is **tab**. This can be changed via the `delim` arg.
 
 > It's strongly recommended to preview the generated data before running the write. See the `preview` arg.
 
-cfimp should be used via `npx`, i.e.
-
 ```
-npx cfimp <args>
+cfimp <args>
 ```
 
 Arguments are specified in the format `-arg:val` or, where the argument doesn't accept a value (denoted `*` below), simply `-arg`. Where `val` contains spaces, use `-arg:"one two"`.
@@ -99,7 +101,7 @@ Desdemona	Johnson	refa-67890
 If for some reason all our authors have the same face and photo, we can even specify this at runtime with a merge value (ee [Merge and default values](#user-content-merged-and-default-values)):
 
 ```
-npx cfimp -space:12345 -model:authors -locale:en-GB -mergevals:authoBioPhoto=refa-12345
+cfimp -space:12345 -model:authors -locale:en-GB -mergevals:authoBioPhoto=refa-12345
 ```
 
 ## Merged and default values
@@ -111,13 +113,13 @@ It's also possible to merge extra data into all rows.
 Let's say you have a field in your data, "popular", with some rows having "yes" as a value. For all others, with no value, you want to insert "no". We can accomplish this via the `dfltvals` [argument](#user-content-usage):
 
 ```
-npx cfimp -space:12345 -model:authors -locale:en-GB -dfltvals:popular=no
+cfimp -space:12345 -model:authors -locale:en-GB -dfltvals:popular=no
 ```
 
 Or let's say you want to add an extra field to all rows. Perhaps you meant (but forgot) to add an "age" column to your spreadsheet data before exporting it, and it so happens that, surprisingly, all the authors in your data are 51. We can accomplish this via the `mergevals` [argument](#user-content-usage):
 
 ```
-npx cfimp -space:12345 -model:authors -locale:en-GB -mergevals:age=51
+cfimp -space:12345 -model:authors -locale:en-GB -mergevals:age=51
 ```
 
 ## Updating existing items
@@ -155,7 +157,7 @@ Berlin	Berlina
 ...or via the `fields` argument, if you're specifying field IDs at runtime.
 
 ```
-npx cfimp -space:12345 -model:cities -locale:en-GB -fields:city,city[es-SP]
+cfimp -space:12345 -model:cities -locale:en-GB -fields:city,city[es-SP]
 ```
 
 ## Tagging items
@@ -172,7 +174,7 @@ Philippa	Gregory	foo,bar
 You can also tag *all* items at runtime via the `tagall` argument.
 
 ```
-npx cfimp -space:12345 -model:authors -tagall:foo,bar
+cfimp -space:12345 -model:authors -tagall:foo,bar
 ```
 
 Note: tags specified in this way are subject to the `listdelim` [argument](#user-content-usage).
