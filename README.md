@@ -177,7 +177,7 @@ npx cfimp -space:12345 -model:authors -tagall:foo,bar
 
 Note: tags specified in this way are subject to the `listdelim` [argument](#user-content-usage).
 
-# Importing geopositional data
+## Importing geopositional data
 
 When importing geopositional data, specify coordinates in the format
 
@@ -193,7 +193,7 @@ i.e.
 
 cfimp will convert this into an object before writing to Contentful. Note also that this means you'll need to use a non-comma value for `delim`, since the geoposition data itself contains a comma.
 
-# Filtering rows
+## Filtering rows
 
 It's possible to stipulate which rows you do, or do not, want to be imported/updated from your input file, via the `skiprows` argument.
 
@@ -211,7 +211,7 @@ The following will whitelist (include) any rows that contain "foo" OR "bar"; all
 cfimp ... -skiprows:!foo,bar
 ```
 
-# Publishing entries
+## Publishing entries
 
 cfimp can publish entries when importing or updating them. To stipulate this, pass the `publish` [argument](#user-content-usage). If this is omitted, the entry will end up in draft status or, for updated entries, whatever its current status is.
 
@@ -219,7 +219,7 @@ Note that, when importing *and* publishing new items, cfimp will generate item I
 
 Such IDs will be formed of 11 randomly alphanumeric characters.
 
-# Delimiter overrides
+## Delimiter overrides
 
 Delimiters are factors in two areas of cfimp:
 
@@ -228,7 +228,7 @@ Delimiters are factors in two areas of cfimp:
 
 Both of these can be overriden - the former via the `delim` arg and the latter via the `listdelim` arg. Note that `listdelim` will apply to **all** occasions where cfimp is attempting to decipher something that it normally expects to be in com-sep format - so for example `_tags` fields, the `mergevals` [argument](#user-content-usage), and so on.
 
-# Troubleshooting
+## Troubleshooting
 
 It's HIGHLY recommended to **preview the generated data** before running the actual import/data. This shows you what cfimp intends to send to Contentful for import/update.
 
@@ -243,6 +243,6 @@ Additionally, a limit is handy in order to avoid numerous terminal screens of da
 
 If you find cfimp is deriving or malformed bad data, **check the `delim` and `listdelim`** args.
 
-# Like this?
+## Like this?
 
 If I've helped you, consider being amazing and [buying me a coffee](https://ko-fi.com/mitya) - thank you!
