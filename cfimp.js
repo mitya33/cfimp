@@ -182,13 +182,12 @@ const { parse } = require('papaparse');
 			//...normal data column
 			if (!['_tags', '_id'].includes(field)) {
 				let fieldIdAndLocaleSpl = splitFieldIdAndLocale(field);
-				field = fieldIdAndLocaleSpl[0];
+				let fieldId = fieldIdAndLocaleSpl[0];
 				let locale = (fieldIdAndLocaleSpl[1] || args.locale),
 					dfltVal = !dfltVals ? null : dfltVals.filter(pair => pair.split('=')[0] == field);
 				if (dfltVal) dfltVal = !dfltVal.length ? null : dfltVal[0].split('=')[1];
 				let val = row[field] || dfltVal;
-				newObj.fields[field] = {...(newObj.fields[field] || {}), [locale]: handleFieldVal(val?.trim ? val.trim() : val)};
-
+				newObj.fields[fieldId] = {...(newObj.fields[fieldId] || {}), [locale]: handleFieldVal(val?.trim ? val.trim() : val)};
 			//special _id (existing item) or _tags columns
 			} else if (field == '_tags')
 				row[field].split(listDelim).forEach(tag => addTag(tag, newObj));
