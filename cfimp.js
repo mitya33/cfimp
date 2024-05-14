@@ -260,7 +260,7 @@ const { parse } = require('papaparse');
 
 	//util - do some sort of casting or transformation on value - defers to related utils below
 	function handleFieldVal(val) {
-		return handleLatLng(handleValType(handleRef(val)));
+		return handleLatLng(handleValType(handleRef(handleRefArray(val))));
 	}
 
 	//util - handle cast string representations of primitives
@@ -282,6 +282,23 @@ const { parse } = require('papaparse');
 		obj.sys.id = isRef[2];
 		obj.sys.linkType = !isRef[1] ? 'Entry' : 'Asset'
 		return obj;
+	}
+
+	// util - if field value is reference to MULTIPLE other content type or asset, convert to array of objects
+	// eg. if field contains "aref-1234,5678,7654" then it will allow linking to multi-ref content fields
+	function handleRefArray(val) {
+		if (typeof val != 'string') return val;
+		let isRef = val.match(/^aref(a)?-(.+)/);
+		if (!isRef) return val;
+		let refs = isRef[2].split(',');
+		let objArray = [];
+		for(let i=0; i < refs.length; i++) {
+			let obj = JSON.parse(JSON.stringify(refTmplt));
+			obj.sys.id = refs[i];
+			obj.sys.linkType = !isRef[1] ? 'Entry' : 'Asset'
+			objArray.push(obj)
+		}
+		return objArray;
 	}
 
 	//util - handle lat/lng value - separate out parts as object
