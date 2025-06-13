@@ -98,7 +98,7 @@ Philippa	Gregory	refa-12345
 Desdemona	Johnson	refa-67890
 ```
 
-For multiple references, you can use the `aref-` prefix followed by a comma-separated list of IDs. For example:
+For multiple references or assets, you can use the `aref-` (array of references) or `arefa-` (array of asset references) prefixes followed by a comma-separated list of IDs. For example:
 
 ```
 forename	surname	relatedAuthors
