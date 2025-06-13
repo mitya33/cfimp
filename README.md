@@ -98,7 +98,15 @@ Philippa	Gregory	refa-12345
 Desdemona	Johnson	refa-67890
 ```
 
-If for some reason all our authors have the same face and photo, we can even specify this at runtime with a merge value (ee [Merge and default values](#user-content-merged-and-default-values)):
+For multiple references, you can use the `aref-` prefix followed by a comma-separated list of IDs. For example:
+
+```
+forename	surname	relatedAuthors
+Philippa	Gregory	aref-12345,67890,abcde
+Desdemona	Johnson	aref-67890,12345
+```
+
+If for some reason all our authors have the same face and photo, we can even specify this at runtime with a merge value (see [Merge and default values](#user-content-merged-and-default-values)):
 
 ```
 cfimp -space:12345 -model:authors -locale:en-GB -mergevals:authoBioPhoto=refa-12345
