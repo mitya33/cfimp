@@ -17,6 +17,7 @@
   "author": "Andrew Croxall (@mitya33)",
   "license": "MIT",
   "dependencies": {
+    "@contentful/rich-text-from-markdown": "^16.0.0",
     "papaparse": "^5.3.2"
   }
 }

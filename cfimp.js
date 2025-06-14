@@ -154,7 +154,8 @@ const { parse } = require('papaparse');
 
 	const fields = rows.meta.fields;
 
-	rows.data.forEach((row, i) => {
+	let i=0;
+	for (const row of rows.data) {
 		i++;
 
 		//...skip if is contrary to limit/offset or skip rules
@@ -174,7 +175,7 @@ const { parse } = require('papaparse');
 		if (args.publish) Object.assign(newObj.sys, {publishedVersion: 1, id: genId()});
 
 		//...iterate over fields...
-		fields.forEach((field, i) => {
+		for (const field of fields) {
 
 			//...skip field?
 			if (skipFields && skipFields.includes(field)) return;
@@ -187,26 +188,32 @@ const { parse } = require('papaparse');
 					dfltVal = !dfltVals ? null : dfltVals.filter(pair => pair.split('=')[0] == field);
 				if (dfltVal) dfltVal = !dfltVal.length ? null : dfltVal[0].split('=')[1];
 				let val = row[field] || dfltVal;
-				newObj.fields[fieldId] = {...(newObj.fields[fieldId] || {}), [locale]: handleFieldVal(val?.trim ? val.trim() : val)};
+				newObj.fields[fieldId] = {
+					...(newObj.fields[fieldId] || {}),
+					[locale]: await handleFieldVal(val?.trim ? val.trim() : val)
+				};
 			//special _id (existing item) or _tags columns
 			} else if (field == '_tags')
 				row[field].split(listDelim).forEach(tag => addTag(tag, newObj));
 			else
 				newObj.sys.id = row[field]
-		});
+		}
 
 		//...any merge data or tag-alls?
 		mergeVals && mergeVals.forEach(pair => {
 			let fieldValSpl = pair.split('='),
 				fieldIdLocaleSpl = splitFieldIdAndLocale(fieldValSpl[0]);
-			newObj.fields[fieldIdLocaleSpl[0]] = {...(newObj.fields[fieldIdLocaleSpl[0]] || {}), [!fieldIdLocaleSpl[1] ? args.locale : fieldIdLocaleSpl[1]]: handleFieldVal(fieldValSpl[1].trim())};
+			newObj.fields[fieldIdLocaleSpl[0]] = {
+				...(newObj.fields[fieldIdLocaleSpl[0]] || {}),
+				[!fieldIdLocaleSpl[1] ? args.locale : fieldIdLocaleSpl[1]]: handleFieldVal(fieldValSpl[1].trim(), true)
+			};
 		});
 		args.tagall && args.tagall.split(listDelim).forEach(tag => addTag(tag, newObj));
 
 		//...log prepared entry
 		data.entries.push(newObj);
 		
-	});
+	}
 
 	//preview only?
 	if (args.preview)
@@ -259,8 +266,10 @@ const { parse } = require('papaparse');
 	}
 
 	//util - do some sort of casting or transformation on value - defers to related utils below
-	function handleFieldVal(val) {
-		return handleLatLng(handleValType(handleRef(handleRefArray(val))));
+	async function handleFieldVal(val, isMergeVals) {
+		const ret = handleLatLng(handleValType(handleRef(handleRefArray(val))));
+		if (!isMergeVals) return handleRichText(val);
+		return ret;
 	}
 
 	//util - handle cast string representations of primitives
@@ -303,9 +312,16 @@ const { parse } = require('papaparse');
 
 	//util - handle lat/lng value - separate out parts as object
 	function handleLatLng(val) {
-		if (!/^-?\d+\.\d+ *, *-?\d+\.\d+$/.test(val)) return val;
+		if (typeof val != 'string' || !/^-?\d+\.\d+ *, *-?\d+\.\d+$/.test(val)) return val;
 		let spl = val.split(/ *, */);
 		return {lat: parseFloat(spl[0]), lon: parseFloat(spl[1])};
+	}
+
+	//util - handle rich text content (converts markdown to rich text JSON)
+	function handleRichText(val) {
+		if (typeof val != 'string' || !/^rich-/.test(val)) return val;
+		const { richTextFromMarkdown } = require('@contentful/rich-text-from-markdown');
+		return richTextFromMarkdown(val.substr(5));
 	}
 
 	//util - add tag
