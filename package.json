@@ -6,7 +6,9 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "bin": "./cfimp.js",
+  "bin": {
+    "cfimp": "cfimp.js"
+  },
   "keywords": [
     "contentful",
     "import",
