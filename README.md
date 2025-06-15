@@ -112,6 +112,17 @@ If for some reason all our authors have the same face and photo, we can even spe
 cfimp -space:12345 -model:authors -locale:en-GB -mergevals:authoBioPhoto=refa-12345
 ```
 
+## Rich text content
+
+You can import into rich text fields by specifying your content prefixed with `rich-`.
+
+You can also include markdown in your content, and this will be converted to Contentful's rich text content format. So for example:
+
+```
+something	content
+foo	rich-my *content* [here](https://mitya.uk)
+```
+
 ## Merged and default values
 
 It's possible to specify default fallback values for your data, which will take effect if the cell is empty for that field.
