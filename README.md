@@ -123,6 +123,8 @@ something	content
 foo	rich-my *content* [here](https://mitya.uk)
 ```
 
+Note: rich text content can be inserted only via your input file, not via [merge or default values](#user-content-merged-and-default-values) direct on the command line.
+
 ## Merged and default values
 
 It's possible to specify default fallback values for your data, which will take effect if the cell is empty for that field.
