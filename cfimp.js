@@ -21,6 +21,8 @@ const { parse } = require('papaparse');
 		blue: '\x1b[36m%s\x1b[0m',
 		red: '\x1b[31m%s\x1b[0m'
 	};
+	const pkg = require('./package.json');
+	console.info(cnslCols.blue, `${pkg.name} v.${pkg.version}`);
 
 	//valid incoming args
 	const validArgs = [
@@ -192,6 +194,7 @@ const { parse } = require('papaparse');
 					...(newObj.fields[fieldId] || {}),
 					[locale]: await handleFieldVal(val?.trim ? val.trim() : val)
 				};
+
 			//special _id (existing item) or _tags columns
 			} else if (field == '_tags')
 				row[field].split(listDelim).forEach(tag => addTag(tag, newObj));
@@ -226,7 +229,7 @@ const { parse } = require('papaparse');
 				if (entry.sys.id) ret._id = entry.sys.id;
 				Object.entries(entry.fields).forEach(([field, localeVals]) => {
 					Object.entries(localeVals).forEach(([locale, val]) => {
-						ret[`${field}[${locale}]`] = !val?.sys ? val : `${val.sys.linkType != 'Asset' ? 'R' : 'Asset r'}ef ${val.sys.id}`;
+						ret[`${field}[${locale}]`] = val;
 					});
 				})
 				return ret;
@@ -241,6 +244,8 @@ const { parse } = require('papaparse');
 	} catch(e) { return console.error(cnslCols.red, e); }
 	if (args.previewfile)
 		return console.info(cnslCols.blue, 'Notice: quit early just to build Contentful import file for preview purposes; file is '+jsonFileName);
+
+	console.log('!!!!!!!!', JSON.stringify(data));
 
 	//run import - delete JSON file after
 	try {
@@ -268,7 +273,7 @@ const { parse } = require('papaparse');
 	//util - do some sort of casting or transformation on value - defers to related utils below
 	async function handleFieldVal(val, isMergeVals) {
 		const ret = handleLatLng(handleValType(handleRef(handleRefArray(val))));
-		if (!isMergeVals) return handleRichText(val);
+		if (!isMergeVals) return handleRichText(ret);
 		return ret;
 	}
 
