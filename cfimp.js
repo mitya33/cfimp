@@ -229,11 +229,14 @@ const { parse } = require('papaparse');
 				if (entry.sys.id) ret._id = entry.sys.id;
 				Object.entries(entry.fields).forEach(([field, localeVals]) => {
 					Object.entries(localeVals).forEach(([locale, val]) => {
+						if (val?.sys) val = `<${val.sys.linkType != 'Asset' ? 'R' : 'Asset r'}ef ${val.sys.id}>`;
+						else if (val instanceof Array) val = `<array of references>`;
+						else if (val?.nodeType) val = '<rich text content, hidden from preview>';
 						ret[`${field}[${locale}]`] = val;
 					});
 				})
 				return ret;
-			}), null, '   ')
+			}), null, '   ').replace(/"(?=<)|(?<=>)"/g, '')
 		);
 
 	//write JSON file
