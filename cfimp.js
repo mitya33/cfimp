@@ -106,7 +106,8 @@ const { parse } = require('papaparse');
 	};
 	const entryTmplt = {
 		metadata: {
-			tags: []
+			tags: [],
+			concepts: []
 		},
 		sys: {
 			contentType: {
@@ -119,20 +120,13 @@ const { parse } = require('papaparse');
 		},
 		fields: {}
 	};
-	const refTmplt = {
+	const linkTmplt = {
 		sys: {
 			type: 'Link',
 			linkType: null,
 			id: null
 		}
 	};
-	const tagTmplt = {
-		sys: {
-			type: 'Link',
-			linkType: 'Tag',
-			id: null
-		}
-	}
 
 	//get data to import
 	let cntnt;
@@ -196,8 +190,8 @@ const { parse } = require('papaparse');
 				};
 
 			//special _id (existing item) or _tags columns
-			} else if (field == '_tags')
-				row[field].split(listDelim).forEach(tag => addTag(tag, newObj));
+			} else if (['_tags', '_tnm'].includes(field))
+				row[field].split(listDelim).forEach(tag => addTagOrTnm(tag, newObj, field == '_tnm'));
 			else
 				newObj.sys.id = row[field]
 		}
@@ -295,7 +289,7 @@ const { parse } = require('papaparse');
 		if (typeof val != 'string') return val;
 		let isRef = val.match(/^ref(a)?-(.+)/);
 		if (!isRef) return val;
-		let obj = JSON.parse(JSON.stringify(refTmplt));
+		let obj = JSON.parse(JSON.stringify(linkTmplt));
 		obj.sys.id = isRef[2];
 		obj.sys.linkType = !isRef[1] ? 'Entry' : 'Asset'
 		return obj;
@@ -310,7 +304,7 @@ const { parse } = require('papaparse');
 		let refs = isRef[2].split(',');
 		let objArray = [];
 		for(let i=0; i < refs.length; i++) {
-			let obj = JSON.parse(JSON.stringify(refTmplt));
+			let obj = JSON.parse(JSON.stringify(linkTmplt));
 			obj.sys.id = refs[i];
 			obj.sys.linkType = !isRef[1] ? 'Entry' : 'Asset'
 			objArray.push(obj)
@@ -332,12 +326,14 @@ const { parse } = require('papaparse');
 		return richTextFromMarkdown(val.substr(5));
 	}
 
-	//util - add tag
-	function addTag(tag, entryObj) {
-		if (entryObj.metadata.tags.find(obj => obj.sys.id == tag)) return;
-		let tagObj = JSON.parse(JSON.stringify(tagTmplt));
-		tagObj.sys.id = tag;
-		entryObj.metadata.tags.push(tagObj);			
+	//util - add tag or taoxnomy link
+	function addTagOrTnm(tagOrTnm, entryObj, isTnm) {
+		const key = !isTnm ? 'tags' : 'concepts';
+		if (entryObj.metadata[key].find(obj => obj.sys.id == tagOrTnm)) return;
+		let obj = JSON.parse(JSON.stringify(linkTmplt));
+		obj.sys.id = tagOrTnm;
+		obj.sys.linkType = !isTnm ? 'Tag' : 'TaxonomyConcept';
+		entryObj.metadata[key].push(obj);			
 	}
 
 	//util - split field ID from locale in strings like foo[en-GB]
