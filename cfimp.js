@@ -106,7 +106,8 @@ const { parse } = require('papaparse');
 	};
 	const entryTmplt = {
 		metadata: {
-			tags: []
+			tags: [],
+			concepts: []
 		},
 		sys: {
 			contentType: {
@@ -119,20 +120,13 @@ const { parse } = require('papaparse');
 		},
 		fields: {}
 	};
-	const refTmplt = {
+	const linkTmplt = {
 		sys: {
 			type: 'Link',
 			linkType: null,
 			id: null
 		}
 	};
-	const tagTmplt = {
-		sys: {
-			type: 'Link',
-			linkType: 'Tag',
-			id: null
-		}
-	}
 
 	//get data to import
 	let cntnt;
@@ -183,7 +177,7 @@ const { parse } = require('papaparse');
 			if (skipFields && skipFields.includes(field)) return;
 
 			//...normal data column
-			if (!['_tags', '_id'].includes(field)) {
+			if (!['_tags', '_id', '_tnm'].includes(field)) {
 				let fieldIdAndLocaleSpl = splitFieldIdAndLocale(field);
 				let fieldId = fieldIdAndLocaleSpl[0];
 				let locale = (fieldIdAndLocaleSpl[1] || args.locale),
@@ -196,8 +190,8 @@ const { parse } = require('papaparse');
 				};
 
 			//special _id (existing item) or _tags columns
-			} else if (field == '_tags')
-				row[field].split(listDelim).forEach(tag => addTag(tag, newObj));
+			} else if (['_tags', '_tnm'].includes(field))
+				row[field].split(listDelim).forEach(tag => addTagOrTnm(tag, newObj, field == '_tnm'));
 			else
 				newObj.sys.id = row[field]
 		}
@@ -229,9 +223,11 @@ const { parse } = require('papaparse');
 				if (entry.sys.id) ret._id = entry.sys.id;
 				Object.entries(entry.fields).forEach(([field, localeVals]) => {
 					Object.entries(localeVals).forEach(([locale, val]) => {
-						if (val?.sys) val = `<${val.sys.linkType != 'Asset' ? 'R' : 'Asset r'}ef ${val.sys.id}>`;
-						else if (val instanceof Array) val = `<array of references>`;
-						else if (val?.nodeType) val = '<rich text content, hidden from preview>';
+						if (val?.sys) val = `<${val.sys.linkType != 'Asset' ? 'r' : 'asset r'}ef ${val.sys.id}>`;
+						else if (val instanceof Array) {
+							if (val.list) val = '<array of text list items>';
+							else if (val.refs) val = `<array of references>`;
+						} else if (val?.nodeType) val = '<rich text content, hidden from preview>';
 						ret[`${field}[${locale}]`] = val;
 					});
 				})
@@ -242,7 +238,7 @@ const { parse } = require('papaparse');
 	//write JSON file
 	try {
 		await new Promise((res, rej) => {
-			fs.writeFile(jsonFileName, JSON.stringify(data), encoding, err => !err ? res() : rej(err));
+			fs.writeFile(jsonFileName, JSON.stringify(data, null, '  '), encoding, err => !err ? res() : rej(err));
 		});
 	} catch(e) { return console.error(cnslCols.red, e); }
 	if (args.previewfile)
@@ -275,7 +271,7 @@ const { parse } = require('papaparse');
 
 	//util - do some sort of casting or transformation on value - defers to related utils below
 	async function handleFieldVal(val, isMergeVals) {
-		const ret = handleLatLng(handleValType(handleRef(handleRefArray(val))));
+		const ret = handleLatLng(handleValType(handleRef(handleRefArray(handleTextList(val)))));
 		if (!isMergeVals) return handleRichText(ret);
 		return ret;
 	}
@@ -295,7 +291,7 @@ const { parse } = require('papaparse');
 		if (typeof val != 'string') return val;
 		let isRef = val.match(/^ref(a)?-(.+)/);
 		if (!isRef) return val;
-		let obj = JSON.parse(JSON.stringify(refTmplt));
+		let obj = JSON.parse(JSON.stringify(linkTmplt));
 		obj.sys.id = isRef[2];
 		obj.sys.linkType = !isRef[1] ? 'Entry' : 'Asset'
 		return obj;
@@ -310,11 +306,12 @@ const { parse } = require('papaparse');
 		let refs = isRef[2].split(',');
 		let objArray = [];
 		for(let i=0; i < refs.length; i++) {
-			let obj = JSON.parse(JSON.stringify(refTmplt));
+			let obj = JSON.parse(JSON.stringify(linkTmplt));
 			obj.sys.id = refs[i];
 			obj.sys.linkType = !isRef[1] ? 'Entry' : 'Asset'
 			objArray.push(obj)
 		}
+		objArray.refs = true;
 		return objArray;
 	}
 
@@ -332,12 +329,22 @@ const { parse } = require('papaparse');
 		return richTextFromMarkdown(val.substr(5));
 	}
 
-	//util - add tag
-	function addTag(tag, entryObj) {
-		if (entryObj.metadata.tags.find(obj => obj.sys.id == tag)) return;
-		let tagObj = JSON.parse(JSON.stringify(tagTmplt));
-		tagObj.sys.id = tag;
-		entryObj.metadata.tags.push(tagObj);			
+	//util - handle short text > list types - split into array on $listDelim
+	function handleTextList(val) {
+		if (typeof val != 'string' || !/^list-/.test(val)) return val;
+		const ret = val.substr(5).split(listDelim);
+		ret.list = true;
+		return ret;
+	}
+
+	//util - add tag or taoxnomy link
+	function addTagOrTnm(tagOrTnm, entryObj, isTnm) {
+		const key = !isTnm ? 'tags' : 'concepts';
+		if (entryObj.metadata[key].find(obj => obj.sys.id == tagOrTnm)) return;
+		let obj = JSON.parse(JSON.stringify(linkTmplt));
+		obj.sys.id = tagOrTnm;
+		obj.sys.linkType = !isTnm ? 'Tag' : 'TaxonomyConcept';
+		entryObj.metadata[key].push(obj);			
 	}
 
 	//util - split field ID from locale in strings like foo[en-GB]
