@@ -177,7 +177,7 @@ const { parse } = require('papaparse');
 			if (skipFields && skipFields.includes(field)) return;
 
 			//...normal data column
-			if (!['_tags', '_id'].includes(field)) {
+			if (!['_tags', '_id', '_tnm'].includes(field)) {
 				let fieldIdAndLocaleSpl = splitFieldIdAndLocale(field);
 				let fieldId = fieldIdAndLocaleSpl[0];
 				let locale = (fieldIdAndLocaleSpl[1] || args.locale),
@@ -223,9 +223,11 @@ const { parse } = require('papaparse');
 				if (entry.sys.id) ret._id = entry.sys.id;
 				Object.entries(entry.fields).forEach(([field, localeVals]) => {
 					Object.entries(localeVals).forEach(([locale, val]) => {
-						if (val?.sys) val = `<${val.sys.linkType != 'Asset' ? 'R' : 'Asset r'}ef ${val.sys.id}>`;
-						else if (val instanceof Array) val = `<array of references>`;
-						else if (val?.nodeType) val = '<rich text content, hidden from preview>';
+						if (val?.sys) val = `<${val.sys.linkType != 'Asset' ? 'r' : 'asset r'}ef ${val.sys.id}>`;
+						else if (val instanceof Array) {
+							if (val.list) val = '<array of text list items>';
+							else if (val.refs) val = `<array of references>`;
+						} else if (val?.nodeType) val = '<rich text content, hidden from preview>';
 						ret[`${field}[${locale}]`] = val;
 					});
 				})
@@ -236,7 +238,7 @@ const { parse } = require('papaparse');
 	//write JSON file
 	try {
 		await new Promise((res, rej) => {
-			fs.writeFile(jsonFileName, JSON.stringify(data), encoding, err => !err ? res() : rej(err));
+			fs.writeFile(jsonFileName, JSON.stringify(data, null, '  '), encoding, err => !err ? res() : rej(err));
 		});
 	} catch(e) { return console.error(cnslCols.red, e); }
 	if (args.previewfile)
@@ -269,7 +271,7 @@ const { parse } = require('papaparse');
 
 	//util - do some sort of casting or transformation on value - defers to related utils below
 	async function handleFieldVal(val, isMergeVals) {
-		const ret = handleLatLng(handleValType(handleRef(handleRefArray(val))));
+		const ret = handleLatLng(handleValType(handleRef(handleRefArray(handleTextList(val)))));
 		if (!isMergeVals) return handleRichText(ret);
 		return ret;
 	}
@@ -309,6 +311,7 @@ const { parse } = require('papaparse');
 			obj.sys.linkType = !isRef[1] ? 'Entry' : 'Asset'
 			objArray.push(obj)
 		}
+		objArray.refs = true;
 		return objArray;
 	}
 
@@ -324,6 +327,14 @@ const { parse } = require('papaparse');
 		if (typeof val != 'string' || !/^rich-/.test(val)) return val;
 		const { richTextFromMarkdown } = require('@contentful/rich-text-from-markdown');
 		return richTextFromMarkdown(val.substr(5));
+	}
+
+	//util - handle short text > list types - split into array on $listDelim
+	function handleTextList(val) {
+		if (typeof val != 'string' || !/^list-/.test(val)) return val;
+		const ret = val.substr(5).split(listDelim);
+		ret.list = true;
+		return ret;
 	}
 
 	//util - add tag or taoxnomy link
