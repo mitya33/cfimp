@@ -205,7 +205,7 @@ const { parse } = require('papaparse');
 				[!fieldIdLocaleSpl[1] ? args.locale : fieldIdLocaleSpl[1]]: handleFieldVal(fieldValSpl[1].trim(), true)
 			};
 		});
-		args.tagall && args.tagall.split(listDelim).forEach(tag => addTag(tag, newObj));
+		args.tagall && args.tagall.split(listDelim).forEach(tag => addTagOrTnm(tag, newObj));
 
 		//...log prepared entry
 		data.entries.push(newObj);

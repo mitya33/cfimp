@@ -1,6 +1,6 @@
 {
   "name": "cfimp",
-  "version": "1.0.48",
+  "version": "1.0.49",
   "description": "A simple but powerful CSV data importer for the Contentful headless CMS",
   "main": "cfimp.js",
   "scripts": {
