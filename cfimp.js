@@ -303,7 +303,7 @@ const { parse } = require('papaparse');
 		if (typeof val != 'string') return val;
 		let isRef = val.match(/^aref(a)?-(.+)/);
 		if (!isRef) return val;
-		let refs = isRef[2].split(',');
+		let refs = isRef[2].split(listDelim);
 		let objArray = [];
 		for(let i=0; i < refs.length; i++) {
 			let obj = JSON.parse(JSON.stringify(linkTmplt));
