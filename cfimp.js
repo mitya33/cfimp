@@ -96,6 +96,10 @@ const { parse } = require('papaparse');
 	if (!args.fields) console.info(cnslCols.blue, 'Notice: $fields not passed; inferring field IDs from first row in data file');
 	if (!args.env) console.info(cnslCols.blue, 'Notice: $env not passed; assuming "master"');
 	if (!args.enc) console.info(cnslCols.blue, 'Notice: $enc not passed; assuming utf8');
+	console.info(cnslCols.blue, `Notice: $nocast ${!args.nocast ?
+		'not passed; seeming booleans and numbers will be cast' :
+		'passed; seeming booleans and numbers will remain as strings'
+	}`);
 
 	//import command structure
 	const importCmd = `contentful space import --environment-id ${env} --space-id ${args.space} --content-file ${jsonFileName} ${args.mtoken || ''}`;
@@ -276,13 +280,23 @@ const { parse } = require('papaparse');
 		return ret;
 	}
 
-	//util - handle cast string representations of primitives
+	//util - handle cast string representations of primitives...
 	function handleValType(val) {
+
+		//...per-column exception (to counteract the actions/non-actions of $nocast)
+		if (/^<str>/.test(val)) return val.replace(/^<str>/, '');
+		if (/^<num>/.test(val)) return parseFloat(val.replace(/^<num>/, ''));
+		if (/^<bool>/.test(val)) return /true/i.test(val);
+		if (/^<null>/.test(val)) return null;
+
+		//...otherwise if $nocast, keep as string
 		if (args.nocast) return val;
-		if (val == 'true') val = true;
-		if (val == 'false') val = false;
+
+		//...else cast as appropriate
+		if (/^(true|false)$/i.test(val)) val = /true/i.test(val);
 		if (val == 'null') val = null;
 		if (parseFloat(val) && /^\d+(\.\d+)?$/.test(val)) val = parseFloat(val);
+
 		return val;
 	}
 
